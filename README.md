@@ -108,11 +108,10 @@ jQuery EasyUI | 基于jQuery的UI插件集合体  | [http://www.jeasyui.com](htt
 - Mysql5.5+
 
 ### 预览图
-![idea](images_shows/login.png)
-![login](project-bootstrap/zheng-login.png)
-![upms](project-bootstrap/zheng-upms.png)
-![cms](project-bootstrap/zheng-cms.png)
-![swagger](project-bootstrap/api.png)
+![images_shows](login.png)
+![images_shows](p1.png)
+![images_shows](p2.png)
+![images_shows](p3.png)
 
 ### 项目总结
 
