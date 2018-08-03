@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.edu.uestc.smgt.dao.HelpLogMapper">
+	<resultMap id="BaseResultMap" type="cn.edu.uestc.smgt.pojo.HelpLog">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="login_name" property="loginName" jdbcType="VARCHAR" />
+		<result column="user_role" property="userRole" jdbcType="VARCHAR" />
+		<result column="user_dept" property="userDept" jdbcType="VARCHAR" />
+		<result column="log_ip" property="logIp" jdbcType="VARCHAR" />
+		<result column="log_desc" property="logDesc" jdbcType="VARCHAR" />
+		<result column="log_url" property="logUrl" jdbcType="VARCHAR" />
+		<result column="log_method" property="logMethod" jdbcType="VARCHAR" />
+		<result column="log_date" property="logDate" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, login_name, user_role, user_dept, log_ip, log_desc,
+		log_url,
+		log_method, log_date
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from help_log
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from
+		help_log
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="cn.edu.uestc.smgt.pojo.HelpLog">
+		insert into help_log (id,
+		login_name, user_role,
+		user_dept, log_ip, log_desc,
+		log_url, log_method,
+		log_date
+		)
+		values (#{id,jdbcType=INTEGER},
+		#{loginName,jdbcType=VARCHAR},
+		#{userRole,jdbcType=VARCHAR},
+		#{userDept,jdbcType=VARCHAR}, #{logIp,jdbcType=VARCHAR},
+		#{logDesc,jdbcType=VARCHAR},
+		#{logUrl,jdbcType=VARCHAR},
+		#{logMethod,jdbcType=VARCHAR},
+		#{logDate,jdbcType=TIMESTAMP}
+		)
+	</insert>
+	<insert id="insertSelective" parameterType="cn.edu.uestc.smgt.pojo.HelpLog">
+		insert into help_log
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="loginName != null">
+				login_name,
+			</if>
+			<if test="userRole != null">
+				user_role,
+			</if>
+			<if test="userDept != null">
+				user_dept,
+			</if>
+			<if test="logIp != null">
+				log_ip,
+			</if>
+			<if test="logDesc != null">
+				log_desc,
+			</if>
+			<if test="logUrl != null">
+				log_url,
+			</if>
+			<if test="logMethod != null">
+				log_method,
+			</if>
+			<if test="logDate != null">
+				log_date,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="loginName != null">
+				#{loginName,jdbcType=VARCHAR},
+			</if>
+			<if test="userRole != null">
+				#{userRole,jdbcType=VARCHAR},
+			</if>
+			<if test="userDept != null">
+				#{userDept,jdbcType=VARCHAR},
+			</if>
+			<if test="logIp != null">
+				#{logIp,jdbcType=VARCHAR},
+			</if>
+			<if test="logDesc != null">
+				#{logDesc,jdbcType=VARCHAR},
+			</if>
+			<if test="logUrl != null">
+				#{logUrl,jdbcType=VARCHAR},
+			</if>
+			<if test="logMethod != null">
+				#{logMethod,jdbcType=VARCHAR},
+			</if>
+			<if test="logDate != null">
+				#{logDate,jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="cn.edu.uestc.smgt.pojo.HelpLog">
+		update help_log
+		<set>
+			<if test="loginName != null">
+				login_name = #{loginName,jdbcType=VARCHAR},
+			</if>
+			<if test="userRole != null">
+				user_role = #{userRole,jdbcType=VARCHAR},
+			</if>
+			<if test="userDept != null">
+				user_dept = #{userDept,jdbcType=VARCHAR},
+			</if>
+			<if test="logIp != null">
+				log_ip = #{logIp,jdbcType=VARCHAR},
+			</if>
+			<if test="logDesc != null">
+				log_desc = #{logDesc,jdbcType=VARCHAR},
+			</if>
+			<if test="logUrl != null">
+				log_url = #{logUrl,jdbcType=VARCHAR},
+			</if>
+			<if test="logMethod != null">
+				log_method = #{logMethod,jdbcType=VARCHAR},
+			</if>
+			<if test="logDate != null">
+				log_date = #{logDate,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="cn.edu.uestc.smgt.pojo.HelpLog">
+		update help_log
+		set login_name = #{loginName,jdbcType=VARCHAR},
+		user_role =
+		#{userRole,jdbcType=VARCHAR},
+		user_dept = #{userDept,jdbcType=VARCHAR},
+		log_ip = #{logIp,jdbcType=VARCHAR},
+		log_desc =
+		#{logDesc,jdbcType=VARCHAR},
+		log_url = #{logUrl,jdbcType=VARCHAR},
+		log_method = #{logMethod,jdbcType=VARCHAR},
+		log_date =
+		#{logDate,jdbcType=TIMESTAMP}
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+
+	<select id="size" resultType="Long" parameterType="Map">
+		select count(*) from help_log
+		<where>
+			<if test="deptId != null and deptId != ''">
+				AND user_dept = #{deptId,jdbcType=VARCHAR}
+			</if>
+			<if test="logDesc != null and logDesc != ''">
+				AND log_desc like
+				CONCAT('%',#{logDesc,jdbcType=VARCHAR},'%' )
+			</if>
+			<if test="loginName != null and loginName != ''">
+				AND login_name = #{loginName,jdbcType=VARCHAR}
+			</if>
+			<if test="startTime != null">
+				 <![CDATA[AND log_date >= #{startTime,jdbcType=TIMESTAMP}]]>
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND log_date <= #{endTime,jdbcType=TIMESTAMP}]]>
+			</if>
+
+		</where>
+	</select>
+
+	<select id="selectByPageAndSelections" parameterType="cn.edu.uestc.smgt.common.QueryBase"
+		resultMap="BaseResultMap">
+		select * from help_log
+		<where>
+			<if test="parameters.deptId != null and parameters.deptId != ''">
+				AND user_dept = #{parameters.deptId,jdbcType=VARCHAR}
+			</if>
+			<if test="parameters.logDesc != null and parameters.logDesc != ''">
+				AND log_desc like
+				CONCAT('%',#{parameters.logDesc,jdbcType=VARCHAR},'%' )
+			</if>
+			<if test="parameters.loginName != null and parameters.loginName != ''">
+				AND login_name = #{parameters.loginName,jdbcType=VARCHAR}
+			</if>
+			<if test="parameters.startTime != null">
+				 <![CDATA[AND log_date >= #{parameters.startTime,jdbcType=TIMESTAMP}]]>
+			</if>
+			<if test="parameters.endTime != null">
+				<![CDATA[AND log_date <= #{parameters.endTime,jdbcType=TIMESTAMP}]]>
+			</if>
+		</where>
+		limit #{firstRow},#{pageSize}
+	</select>
+</mapper>

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Row Editing in DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/demo.css">
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="./js/common/common.js"></script>
+    <script src="./js/common/loader.js"></script>
+    <script src="./js/common/url.js"></script>
+
+    <style type="text/css">
+    #detail_dlg label{
+        width:100px;
+    }
+    </style>
+    <script type="text/javascript">
+     var url;
+        //暂存岗位期限和聘期
+   var jobTime="";
+   var employmentPeriod="";
+    //搜索下面的部门
+     var deptId = localStorage.deptId;
+
+     var current_deptId =localStorage.deptId;
+     function doSearch(){
+       var val=$("#cc").combobox("getValues");
+  
+       var type=$("#cc1").combobox("getValue");
+       if (val[0] == '') {
+            val = val.slice(1)
+         }
+       var deptIds = val.join(',');
+       var query={};
+       query.jobStatus=3;
+       if(deptIds){
+          query.deptId=deptIds;
+        }
+       if(type){
+         query.type=type;
+       }
+       if (!current_deptId) {        
+            $('#tt').datagrid('load', query);
+        } else {
+            query.deptId=current_deptId,
+            $('#tt').datagrid('load',query);
+        }
+    }
+    function showDetail(index) {
+        console.log(index);
+        var data = $('#tt').datagrid('getData').rows[index];
+        data.jobTime=jobTime;
+        data.employmentPeriod=employmentPeriod;
+        $('#detail_dlg').form('load', data);
+        $('#detail_dlg').dialog('open').dialog('center').dialog('setTitle', '查看详情');
+    }
+    function closeDlg(){
+        $('#detail_dlg').dialog('close');
+        $('#detail_dlg').form('clear');
+
+
+    }
+    //定义查看详情的函数
+    function rowformater(value, row, index){
+        return '<a href="#" onclick="showDetail(' + index + ')">查看详情</a>';
+    }
+     //获取聘期
+    function rowformater_e(value,row,index){        
+        return employmentPeriod;
+    }
+    //获取岗位期限
+    function rowformater_t(value,row,index){
+        return jobTime;
+    }
+    
+    $(function(){
+         //获取岗位期限
+          $.ajax({
+            type:'POST',
+            async:false,
+            contentType:'application/json; charset=utf-8',
+            dataType:'json',
+            url:baseUrl+'/office/getJobPeriod.do',
+            success:function(data){
+               jobTime=data.body;
+        }
+    })
+         
+        //获取聘期
+         $.ajax({
+            type:"POST",
+            async:false,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json', //非常关键
+            url:baseUrl+"/office/getEmploymentPeriod.do",
+            success:function(data){
+                employmentPeriod=data.body
+            }
+        })
+        var query={};
+        if(current_deptId){
+           query={
+                deptId: current_deptId,
+                jobStatus:3,
+            }
+        }
+        else{
+           query={
+                jobStatus:3,
+            }
+        }
+        
+       
+  $("#tt").datagrid({
+            title:"部门已有岗位",
+            singleSelect:true,
+            fit:true,
+            idField:true,
+            queryParams: query,
+            method:'post',
+            toolbar:'#toolbar',
+            pagination:true,
+            pageSize:30,
+            pageList:[5,10,15,20,25,30],
+            method:'post',
+            width:"100%",
+            height:"auto",
+            rownumbers:true,
+            url:baseUrl+"office/searchByPage.do",
+          //选择合并学院代号和学院名称
+          
+          onLoadSuccess:function(data){
+            if(data.total==0){
+                alert("目前无发布岗位")
+            }
+            else{
+            $(this).datagrid("autoMergeCells",['deptId','deptName'])
+            }
+          },
+          onDblClickRow: function() {
+                editDept()
+            }
+        });
+   
+   $("#cc").combobox({
+        url:baseUrl + 'base/dept/list.do',
+        valueField: 'deptId',
+        textField: 'deptName',
+        method: 'post',
+        multiple: false,
+        loader: cloader,
+        panelHeight: 200,
+        // onChange: function(n, o) {
+        //         var len = n.length;
+        //         // console.log(len);
+        //         var last = n[len - 1];
+        //         var depts = $('#cc').combobox('getData');
+        //         var dept_arr = [];
+        //         console.log(depts.length);
+        //         $.each(depts, function(i, val) {
+        //                 dept_arr.push(val.deptId)
+        //             })
+        //             // dept_arr = dept_arr.slice(1)
+        //         if (len < depts.length) {
+        //             var val = $('#cc').combobox('getValues');
+        //             if (val[0] == '') {
+        //                 $('#cc').combobox('setValues', val.slice(1));
+        //             } else {
+        //                 /*第一个不等于all*/
+        //                 if (len == depts.length - 1) {
+        //                     console.log('else');
+        //                     val.push('')
+        //                     $('#cc').combobox('setValues', val);
+        //                 }
+        //             }
+        //         }
+        //         if (last == '') {
+        //             /*全选*/
+        //             console.log('last=');
+        //             if (len < depts.length) {
+        //                 $('#cc').combobox('setValues', dept_arr);
+        //                 selectAll = true;
+        //             }
+        //         }
+        //     },
+      });
+   if (current_deptId) {
+
+            $('#cc').combobox('setValue', current_deptId);
+            $('#cc').combobox('disable');
+        }
+         
+})
+    //扩展，使得datagrid中相同的列合并
+  $.extend($.fn.datagrid.methods, {
+    autoMergeCells: function(jq, fields) {
+        return jq.each(function() {
+            var target = $(this);
+            if (!fields) {
+                fields = target.datagrid("getColumnFields");
+            }
+            var rows = target.datagrid("getRows");
+            var i = 0,
+            j = 0,
+            temp = {};
+            for (i; i < rows.length; i++) {
+                var row = rows[i];
+                j = 0;
+                for (j; j < fields.length; j++) {
+                    var field = fields[j];
+                    var tf = temp[field];
+                    if (!tf) {
+                        tf = temp[field] = {};
+                        tf[row[field]] = [i];
+                    } else {
+                        var tfv = tf[row[field]];
+                        if (tfv) {
+                            tfv.push(i);
+                        } else {
+                            tfv = tf[row[field]] = [i];
+                        }
+                    }
+                }
+            }
+            $.each(temp,
+            function(field, colunm) {
+                $.each(colunm,
+                function() {
+                    var group = this;
+
+                    if (group.length > 1) {
+                        var before, after, megerIndex = group[0];
+                        for (var i = 0; i < group.length; i++) {
+                            before = group[i];
+                            after = group[i + 1];
+                            if (after && (after - before) == 1) {
+                                continue;
+                            }
+                            var rowspan = before - megerIndex + 1;
+                            if (rowspan > 1) {
+                                target.datagrid('mergeCells', {
+                                    index: megerIndex,
+                                    field: field,
+                                    rowspan: rowspan
+                                });
+                            }
+                            if (after && (after - before) != 1) {
+                                megerIndex = after;
+                            }
+                        }
+                    }
+                });
+            });
+        });
+    }
+});
+
+    </script>
+    </head>
+    <body>
+
+    <div id="toolbar">
+        <div style="padding:3px">
+<!--             <span>部门 ID:</span>
+            <input id="deptId" style="line-height:26px;border:1px solid #ccc"> -->
+            <span>部门名称:</span>
+            <input id='cc' name='deptId' value="">
+             <span>岗位类型:</span>
+            <select id="cc1" value="1" class="easyui-combobox" style="width:100px;" panelHeight="auto">
+                <option value="">全部</option>
+                <option value="0">行政事务</option>
+                <option value="1">学生事务</option>
+                <option value="2">研究性工作</option>
+            </select>
+            <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()">查询</a>
+        </div>
+        
+    </div>
+    <table id="tt">
+     <thead>
+         <tr>
+           <th rowspan="2" field="deptId" width="10%" align="center">学院/部门ID</th>
+           <th rowspan="2" field="deptName" width="10%" align="center">学院/部门名称</th>
+           <th rowspan="2" field="jobTime" width="10%" align="center" data-options="formatter:rowformater_t">岗位期限</th>
+           <th rowspan="2" field="employmentPeriod" width="10%" align="center" data-options="formatter:rowformater_e">聘期</th>
+           <th rowspan="2" field="teacherName" width="10%" align="center">指导老师</th>
+           <th rowspan="2" field="telephone" width="7%" align="center" hidden="true">指导老师电话</th>
+           <th rowspan="2" field="guideTrain" width="10%" align="center" hidden="true">指导与培训体系</th>
+           <th colspan="7" align="center" hidden="true">岗位要求</th>
+        </tr>
+        <tr> 
+            <th field="officeName" align="center" width="12%">设岗科室名称</th>
+            <th field="typeName" align="center" width="12%">岗位类型</th>
+            <th field="jobNum" align="center" width="12%">设岗科室岗位数</th>
+            <th field="jobWork" align="center" width="8%" hidden="true">科室工作量</th>
+            <th field="responsibility" align="center" width="10%" hidden="true">科室工作职责</th>
+             <th field="ability" align="center" width="12%" hidden="true">科室岗位培养的综合素质</th>
+             <th field="operator" title="详细信息" width="13%" align="center" 
+             data-options="formatter:rowformater">详细信息</th>          
+        </tr>
+        </thead>
+    </table>
+     
+   <!-- 详细信息对话框 -->
+    <div id="detail_dlg" class="easyui-dialog" style="width:500px" closed="true" buttons="#dlg-buttons" data-options="draggable:true,modal:true">
+    <div style="width:99%;height:500px;">
+        <form id="detail_fm" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">详细信息</div>
+            <div style="margin-bottom:10px">
+                <input name="deptName" class="easyui-textbox easyui-validatebox" required="true" label="设岗学院:" style="width:100%" disabled="true">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_jobTime"" name="jobTime" class="easyui-textbox" required="true" label="岗位期限:" style="width:100%" disabled="true">           
+            </div>
+            <!--还没接口-->
+            <div style="margin-bottom:10px">
+                <input id="fm_employmentPeriod"" name="employmentPeriod" class="easyui-textbox" required="true" label="聘期:" style="width:100%" disabled="true">           
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_teacherName" name="teacherName" class="easyui-textbox" required="true" label="指导老师:" style="width:100%" disabled="true">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_telephone" name="telephone" class="easyui-textbox easyui-validatebox" required="true" label="指导老师电话:" data-options="validType:'mobileAndTel'" style="width:100%" disabled="true">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_guideTrain" name="guideTrain" class="easyui-textbox" required="true" label="指导与培训体系:" style="width:100%;height:50px;" data-options="multiline:true" disabled="true">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_officeName" name="officeName" class="easyui-textbox" required="true" label="岗位科室名称:" style="width:100%" disabled="true">
+            </div>
+             <div style="margin-bottom:10px">
+                <input id="fm_type" name="type" class="easyui-textbox" required="true" label="岗位类型:" style="width:100%" disabled="true">         
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_jobNum" name="jobNum" class="easyui-textbox easyui-validatebox" required="true" label="岗位数:" type="number" data-options="validType:'number'" style="width:100%" disabled="true">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_jobWork" name="jobWork" class="easyui-textbox" required="true" label="岗位工作量:" style="width:100%;" disabled="true">
+            </div>
+            
+            <div style="margin-bottom:10px">
+                <input id="fm_responsibility" name="responsibility" class="easyui-textbox" required="true" label="岗位职责:" style="width:100%;height:50px;" data-options="multiline:true" disabled="true">
+            </div>
+             <div style="margin-bottom:10px">
+                <input id="fm_ability" name="ability" class="easyui-textbox" required="true" label="培养的综合素质:" style="width:100%;height:50px;" data-options="multiline:true" disabled="true">
+            </div>  
+        </form>
+        </div>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="closeDlg()" style="width:90px">确定</a>
+    </div>
+    </body>
+    </html>

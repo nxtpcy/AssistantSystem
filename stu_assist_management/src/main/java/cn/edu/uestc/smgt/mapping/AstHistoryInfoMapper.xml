@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.edu.uestc.smgt.dao.AstHistoryInfoMapper">
+	<resultMap id="BaseResultMap" type="cn.edu.uestc.smgt.pojo.AstHistoryInfo">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="stu_id" property="stuId" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="stu_college_id" property="stuCollegeId"
+			jdbcType="VARCHAR" />
+		<result column="stu_college_name" property="stuCollegeName"
+			jdbcType="VARCHAR" />
+		<result column="stu_ds_id" property="stuDsId" jdbcType="VARCHAR" />
+		<result column="stu_ds_name" property="stuDsName" jdbcType="VARCHAR" />
+		<result column="telephone" property="telephone" jdbcType="VARCHAR" />
+		<result column="bank_no" property="bankNo" jdbcType="VARCHAR" />
+		<result column="bank_name" property="bankName" jdbcType="VARCHAR" />
+		<result column="on_job_info" property="onJobInfo" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, stu_id, name, stu_college_id, stu_college_name,
+		stu_ds_id,
+		stu_ds_name, telephone,
+		bank_no, bank_name, on_job_info,
+		create_time, modify_time
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from help_ast_history_info
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from
+		help_ast_history_info
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="cn.edu.uestc.smgt.pojo.AstHistoryInfo">
+		insert into
+		help_ast_history_info (id, stu_id, name,
+		stu_college_id,
+		stu_college_name, stu_ds_id,
+		stu_ds_name, telephone, bank_no,
+		bank_name, on_job_info, create_time,
+		modify_time)
+		values
+		(#{id,jdbcType=INTEGER}, #{stuId,jdbcType=VARCHAR},
+		#{name,jdbcType=VARCHAR},
+		#{stuCollegeId,jdbcType=VARCHAR},
+		#{stuCollegeName,jdbcType=VARCHAR}, #{stuDsId,jdbcType=VARCHAR},
+		#{stuDsName,jdbcType=VARCHAR}, #{telephone,jdbcType=VARCHAR},
+		#{bankNo,jdbcType=VARCHAR},
+		#{bankName,jdbcType=VARCHAR},
+		#{onJobInfo,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
+		#{modifyTime,jdbcType=TIMESTAMP})
+	</insert>
+	<insert id="insertSelective" parameterType="cn.edu.uestc.smgt.pojo.AstHistoryInfo">
+		insert into help_ast_history_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="stuId != null">
+				stu_id,
+			</if>
+			<if test="name != null">
+				name,
+			</if>
+			<if test="stuCollegeId != null">
+				stu_college_id,
+			</if>
+			<if test="stuCollegeName != null">
+				stu_college_name,
+			</if>
+			<if test="stuDsId != null">
+				stu_ds_id,
+			</if>
+			<if test="stuDsName != null">
+				stu_ds_name,
+			</if>
+			<if test="telephone != null">
+				telephone,
+			</if>
+			<if test="bankNo != null">
+				bank_no,
+			</if>
+			<if test="bankName != null">
+				bank_name,
+			</if>
+			<if test="onJobInfo != null">
+				on_job_info,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="modifyTime != null">
+				modify_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="stuId != null">
+				#{stuId,jdbcType=VARCHAR},
+			</if>
+			<if test="name != null">
+				#{name,jdbcType=VARCHAR},
+			</if>
+			<if test="stuCollegeId != null">
+				#{stuCollegeId,jdbcType=VARCHAR},
+			</if>
+			<if test="stuCollegeName != null">
+				#{stuCollegeName,jdbcType=VARCHAR},
+			</if>
+			<if test="stuDsId != null">
+				#{stuDsId,jdbcType=VARCHAR},
+			</if>
+			<if test="stuDsName != null">
+				#{stuDsName,jdbcType=VARCHAR},
+			</if>
+			<if test="telephone != null">
+				#{telephone,jdbcType=VARCHAR},
+			</if>
+			<if test="bankNo != null">
+				#{bankNo,jdbcType=VARCHAR},
+			</if>
+			<if test="bankName != null">
+				#{bankName,jdbcType=VARCHAR},
+			</if>
+			<if test="onJobInfo != null">
+				#{onJobInfo,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="modifyTime != null">
+				#{modifyTime,jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="cn.edu.uestc.smgt.pojo.AstHistoryInfo">
+		update help_ast_history_info
+		<set>
+			<if test="stuId != null">
+				stu_id = #{stuId,jdbcType=VARCHAR},
+			</if>
+			<if test="name != null">
+				name = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="stuCollegeId != null">
+				stu_college_id = #{stuCollegeId,jdbcType=VARCHAR},
+			</if>
+			<if test="stuCollegeName != null">
+				stu_college_name = #{stuCollegeName,jdbcType=VARCHAR},
+			</if>
+			<if test="stuDsId != null">
+				stu_ds_id = #{stuDsId,jdbcType=VARCHAR},
+			</if>
+			<if test="stuDsName != null">
+				stu_ds_name = #{stuDsName,jdbcType=VARCHAR},
+			</if>
+			<if test="telephone != null">
+				telephone = #{telephone,jdbcType=VARCHAR},
+			</if>
+			<if test="bankNo != null">
+				bank_no = #{bankNo,jdbcType=VARCHAR},
+			</if>
+			<if test="bankName != null">
+				bank_name = #{bankName,jdbcType=VARCHAR},
+			</if>
+			<if test="onJobInfo != null">
+				on_job_info = #{onJobInfo,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="modifyTime != null">
+				modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="cn.edu.uestc.smgt.pojo.AstHistoryInfo">
+		update
+		help_ast_history_info
+		set stu_id = #{stuId,jdbcType=VARCHAR},
+		name =
+		#{name,jdbcType=VARCHAR},
+		stu_college_id =
+		#{stuCollegeId,jdbcType=VARCHAR},
+		stu_college_name =
+		#{stuCollegeName,jdbcType=VARCHAR},
+		stu_ds_id =
+		#{stuDsId,jdbcType=VARCHAR},
+		stu_ds_name =
+		#{stuDsName,jdbcType=VARCHAR},
+		telephone =
+		#{telephone,jdbcType=VARCHAR},
+		bank_no = #{bankNo,jdbcType=VARCHAR},
+		bank_name = #{bankName,jdbcType=VARCHAR},
+		on_job_info =
+		#{onJobInfo,jdbcType=VARCHAR},
+		create_time =
+		#{createTime,jdbcType=TIMESTAMP},
+		modify_time =
+		#{modifyTime,jdbcType=TIMESTAMP}
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+
+	<!-- 根据学号查询数据 -->
+	<select id="selectByStuId" parameterType="String" resultMap="BaseResultMap">
+		select * from help_ast_history_info where stu_id =
+		#{stuId,jdbcType=VARCHAR}
+	</select>
+
+	<!-- 获取总行数 -->
+	<select id="size" resultType="Long" parameterType="Map">
+		select count(*) from help_ast_history_info
+		<where>
+			<if test="stuId != null and stuId != ''">
+				AND stu_id like
+				CONCAT('%',#{stuId,jdbcType=VARCHAR},'%' )
+			</if>
+			<if test="name != null and name != ''">
+				AND name like
+				CONCAT('%',#{name,jdbcType=VARCHAR},'%' )
+			</if>
+			<if test="startTime != null">
+				 <![CDATA[AND create_time >= #{startTime,jdbcType=TIMESTAMP}]]>
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND create_time <= #{endTime,jdbcType=TIMESTAMP}]]>
+			</if>
+
+		</where>
+	</select>
+	<!-- 获取数据集 -->
+	<select id="selectByPageAndSelections" parameterType="cn.edu.uestc.smgt.common.QueryBase"
+		resultMap="BaseResultMap">
+		select * from help_ast_history_info
+		<where>
+			<if test="parameters.stuId != null and parameters.stuId != ''">
+				AND stu_id like
+				CONCAT('%',#{parameters.stuId,jdbcType=VARCHAR},'%' )
+			</if>
+			<if test="parameters.name != null and parameters.name != ''">
+				AND name like
+				CONCAT('%',#{parameters.name,jdbcType=VARCHAR},'%' )
+			</if>
+			<if test="parameters.startTime != null">
+				 <![CDATA[AND create_time >= #{parameters.startTime,jdbcType=TIMESTAMP}]]>
+			</if>
+			<if test="parameters.endTime != null">
+				<![CDATA[AND create_time <= #{parameters.endTime,jdbcType=TIMESTAMP}]]>
+			</if>
+		</where>
+		limit #{firstRow},#{pageSize}
+	</select>
+</mapper>

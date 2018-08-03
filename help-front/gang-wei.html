@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Row Editing in DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/demo.css">
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="./js/common/common.js"></script>
+    <script src="./js/common/loader.js"></script>
+    <script src="./js/common/url.js"></script>
+    <style type="text/css">
+    #dlg span {
+        width: 400px;
+    }
+    
+    #dlg label {
+        width: 100px;
+    }
+     #dlg1 span {
+        width: 400px;
+    }
+    
+    #dlg1 label {
+        width: 100px;
+    }
+    </style>
+    <script type="text/javascript">
+        //新建上面
+        var url='';
+        function doSearch() {
+        var val = $('#cc').combobox('getValue');
+        var val1 =$("#cc1").combobox('getValue');
+
+        $('#tt').datagrid('load', {
+            deptId: val,
+            type:val1,
+            // deptName: $('#deptName').val()
+        });
+    }
+     function newDept() {
+        $('#dlg').dialog('open').dialog('center').dialog('setTitle', '添加新岗位');
+        $('#fm').form('clear');
+        $('#fm_deptId').textbox('readonly', false);
+        $('#fm_deptName').textbox('readonly', false);
+
+        url =baseUrl+'base/dept/updateThree.do';
+    }
+  
+     function saveDept() {
+        var data = $("#fm").serializeObject();
+        delete data.typeName;
+        var index=$('#tt').datagrid('getRowIndex',$('#tt').datagrid('getSelected'));
+        if ($("#fm").form('validate')) {
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(result) {
+                  console.log(result)
+                    if (result.status == 1) {
+                         $.messager.alert('Warning', result.message);
+                        $('#dlg').dialog('close'); // close the dialog
+                        // $('#tt').datagrid({onLoadSuccess:function(data){
+                        //     $('#tt').datagrid('selectRow',index);//修改之后光标在修改的数据行上
+                        //     $('#tt').datagrid('scrollTo',index);
+                        // }})
+                        
+                        $('#tt').datagrid('reload'); // reload the user data
+                        
+                    } else {
+                        $.messager.show({ // show error message
+                            title: 'Error',
+                            msg: result.message
+                        });
+                    }
+                }
+            })
+        };
+
+    }
+
+    function editDept() {
+        var row = $('#tt').datagrid('getSelected');
+        console.log(row.id)
+        if (row) {
+            $('#dlg').dialog('open').dialog('center').dialog('setTitle', '编辑部门');
+            $('#fm').form('load', row);
+            $('#fm_deptId').textbox('readonly', true);
+            $('#fm_deptName').textbox('readonly', true);
+             $('#fm_typeName').textbox('readonly', true);
+            url = baseUrl+'base/dept/updateThree.do';
+           
+            
+        }else {
+            $.messager.alert('Warning', "请先选择一条数据");
+        }
+    }
+    function pagerFilter(data){
+            if (typeof data.length == 'number' && typeof data.splice == 'function'){    // is array
+                data = {
+                    total: data.length,
+                    rows: data
+                }
+            }
+            var dg = $(this);
+            var opts = dg.datagrid('options');
+            var pager = dg.datagrid('getPager');
+            pager.pagination({
+                onSelectPage:function(pageNum, pageSize){
+                    opts.pageNumber = pageNum;
+                    opts.pageSize = pageSize;
+                    pager.pagination('refresh',{
+                        pageNumber:pageNum,
+                        pageSize:pageSize
+                    });
+                    dg.datagrid('loadData',data);
+                }
+            });
+            if (!data.originalRows){
+                data.originalRows = (data.rows);
+            }
+            var start = (opts.pageNumber-1)*parseInt(opts.pageSize);
+            var end = start + parseInt(opts.pageSize);
+            data.rows = (data.originalRows.slice(start, end));
+            return data;
+        }
+$(function(){
+  $("#tt").datagrid({
+            title:"学院/部门设岗管理",
+            singleSelect:true,
+            fit:true,
+            // rownumbers:true,//必须有行号，否则编辑刷新之后无法定位到该行，因此也要去掉合并某些行
+            idField:'id',
+            method:'post',
+            toolbar:'#toolbar', 
+            pagination:true,
+            pageSize:30,
+            pageList:[5,10,15,20,25,30],
+            method:'post',
+            width: "100%",
+            height: "auto",
+            // url:baseUrl+'base/dept/listForThree1.do',
+            columns: [
+                [ {
+                    field: 'deptId',
+                    title: '学院／部门ID',
+                    align: 'center',
+                    width: "10%",
+                    sortOrder:'asc',
+                    sortable:true,
+                }, {
+                    field: 'deptName',
+                    title: '学院／部门名称',
+                    width: "15%",
+                    align: 'center',
+                    // editor: 'text'
+                }, {
+                    field: 'typeName',
+                    title: '岗位类型',
+                    align: 'center',
+                    width: "15%",
+                    sortOrder:'dec',
+                    sortable:true,
+                    // editor: 'textbox'
+                },
+                {
+                    field: 'maxJobNum',
+                    title: '研究生院指导岗位数量',
+                    align: 'center',
+                    width: "15%",
+                    // editor: 'textbox'
+                },
+                {
+                    field: 'reviewJobNum',
+                    title: '待审核岗位数量',
+                    align: 'center',
+                    width: "15%",
+                    // editor: 'textbox'
+                },
+                {
+                    field: 'agreeJobNum',
+                    title: '审核通过',
+                    align: 'center',
+                    width: "15%",
+                    // editor: 'textbox'
+                },
+                {
+                    field: 'leftJobNum',
+                    title: '可申请',
+                    align: 'center',
+                    width: "15%",
+                    // editor: 'textbox'
+                },
+                ]
+            ],
+          //选择合并学院代号和学院名称
+          
+          onLoadSuccess:function(data){
+            $(this).datagrid("autoMergeCells",['deptId','deptName'])
+          },
+          onDblClickRow: function() {
+                editDept()
+            },
+            loadFilter: pagerFilter,
+        }).datagrid({url:baseUrl+'base/dept/listForThree1.do'
+        });
+  
+   $("#cc").combobox({
+        url: baseUrl + 'base/dept/list.do',
+        valueField: 'deptId',
+        textField: 'deptName',
+        method: 'post',
+        multiple: false,
+        loader: cloader,
+        panelHeight: 200
+      });
+   $("#cc1").combobox({
+     url:'typeName.json',
+        valueField: 'type',
+        textField: 'typeName',
+        method: 'post',
+        multiple: false,
+        loader: cloader,
+        panelHeight: 100
+   })
+})
+$.extend($.fn.datagrid.methods, {
+    autoMergeCells: function(jq, fields) {
+        return jq.each(function() {
+            var target = $(this);
+            if (!fields) {
+                fields = target.datagrid("getColumnFields");
+            }
+            var rows = target.datagrid("getRows");
+            var i = 0,
+            j = 0,
+            temp = {};
+            for (i; i < rows.length; i++) {
+                var row = rows[i];
+                j = 0;
+                for (j; j < fields.length; j++) {
+                    var field = fields[j];
+                    var tf = temp[field];
+                    if (!tf) {
+                        tf = temp[field] = {};
+                        tf[row[field]] = [i];
+                    } else {
+                        var tfv = tf[row[field]];
+                        if (tfv) {
+                            tfv.push(i);
+                        } else {
+                            tfv = tf[row[field]] = [i];
+                        }
+                    }
+                }
+            }
+            $.each(temp,
+            function(field, colunm) {
+                $.each(colunm,
+                function() {
+                    var group = this;
+
+                    if (group.length > 1) {
+                        var before, after, megerIndex = group[0];
+                        for (var i = 0; i < group.length; i++) {
+                            before = group[i];
+                            after = group[i + 1];
+                            if (after && (after - before) == 1) {
+                                continue;
+                            }
+                            var rowspan = before - megerIndex + 1;
+                            if (rowspan > 1) {
+                                target.datagrid('mergeCells', {
+                                    index: megerIndex,
+                                    field: field,
+                                    rowspan: rowspan
+                                });
+                            }
+                            if (after && (after - before) != 1) {
+                                megerIndex = after;
+                            }
+                        }
+                    }
+                });
+            });
+        });
+    }
+});
+    </script>
+    
+</head>
+<body>
+   
+   <div id="toolbar">
+        <div style="padding:3px">
+<!--             <span>部门 ID:</span>
+            <input id="deptId" style="line-height:26px;border:1px solid #ccc"> -->
+            <span>部门名称:</span>
+            <input id='cc' name='deptId' value="">
+            <span>岗位类型:</span>
+            <input id='cc1' name='typeName' value="">
+            <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()">查询</a>
+        </div>
+        <div>
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editDept(' + index + ')">编辑</a>
+            
+        </div>  
+    </div>
+    <table id="tt">
+    
+    </table>
+     <div id="dlg" class="easyui-dialog" style="width:500px" closed="true" buttons="#dlg-buttons" data-options="draggable:true,modal:true">
+     <div style="width:99%;height:240px;">
+        <form id="fm" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">学院/部门信息</div>
+            <div style="margin-bottom:10px">
+                <input id="fm_deptId" name="deptId" class="easyui-textbox" required="true" label="学院/部门编号:" style="width:100%">
+            </div>
+            <div>
+                <input id="fm_type"" name="type"   style="display:none;" type="hidden"> 
+                
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_deptName" name="deptName" class="easyui-textbox" required="true" label="学院/部门名称:" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_typeName" name="typeName" class="easyui-textbox" required="true" label="岗位类型:" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_maxJobNum" name="maxJobNum" class="easyui-numberbox" required="true" label="岗位总数:" type="number" style="width:100%">
+            </div>
+        </form>
+        </div>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveDept()" style="width:90px">Save</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">Cancel</a>
+    </div>
+   
+</body>
+</html>

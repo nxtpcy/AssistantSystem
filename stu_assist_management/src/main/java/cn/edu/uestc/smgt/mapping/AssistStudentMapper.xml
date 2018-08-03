@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.edu.uestc.smgt.dao.AssistStudentMapper">
+	<resultMap id="BaseResultMap" type="cn.edu.uestc.smgt.pojo.AssistStudent">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="stu_id" property="stuId" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="stu_college_id" property="stuCollegeId"
+			jdbcType="VARCHAR" />
+		<result column="stu_college_name" property="stuCollegeName"
+			jdbcType="VARCHAR" />
+		<result column="stu_ds_id" property="stuDsId" jdbcType="VARCHAR" />
+		<result column="stu_ds_name" property="stuDsName" jdbcType="VARCHAR" />
+		<result column="dept_id" property="deptId" jdbcType="VARCHAR" />
+		<result column="office_id" property="officeId" jdbcType="INTEGER" />
+		<result column="telephone" property="telephone" jdbcType="VARCHAR" />
+		<result column="bank_no" property="bankNo" jdbcType="VARCHAR" />
+		<result column="bank_name" property="bankName" jdbcType="VARCHAR" />
+		<result column="decision" property="decision" jdbcType="TINYINT" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, stu_id, name, stu_college_id, stu_college_name,
+		stu_ds_id,
+		stu_ds_name, dept_id,
+		office_id, telephone, bank_no,
+		bank_name, decision, create_time, modify_time
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from help_assist_student
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from
+		help_assist_student
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="cn.edu.uestc.smgt.pojo.AssistStudent">
+		insert into
+		help_assist_student (id, stu_id, name,
+		stu_college_id,
+		stu_college_name, stu_ds_id,
+		stu_ds_name, dept_id, office_id,
+		telephone, bank_no, bank_name,
+		decision, create_time, modify_time
+		)
+		values (#{id,jdbcType=INTEGER}, #{stuId,jdbcType=VARCHAR},
+		#{name,jdbcType=VARCHAR},
+		#{stuCollegeId,jdbcType=VARCHAR},
+		#{stuCollegeName,jdbcType=VARCHAR}, #{stuDsId,jdbcType=VARCHAR},
+		#{stuDsName,jdbcType=VARCHAR}, #{deptId,jdbcType=VARCHAR},
+		#{officeId,jdbcType=INTEGER},
+		#{telephone,jdbcType=VARCHAR},
+		#{bankNo,jdbcType=VARCHAR}, #{bankName,jdbcType=VARCHAR},
+		#{decision,jdbcType=TINYINT}, #{createTime,jdbcType=TIMESTAMP},
+		#{modifyTime,jdbcType=TIMESTAMP}
+		)
+	</insert>
+	<insert id="insertSelective" parameterType="cn.edu.uestc.smgt.pojo.AssistStudent">
+		insert into help_assist_student
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="stuId != null">
+				stu_id,
+			</if>
+			<if test="name != null">
+				name,
+			</if>
+			<if test="stuCollegeId != null">
+				stu_college_id,
+			</if>
+			<if test="stuCollegeName != null">
+				stu_college_name,
+			</if>
+			<if test="stuDsId != null">
+				stu_ds_id,
+			</if>
+			<if test="stuDsName != null">
+				stu_ds_name,
+			</if>
+			<if test="deptId != null">
+				dept_id,
+			</if>
+			<if test="officeId != null">
+				office_id,
+			</if>
+			<if test="telephone != null">
+				telephone,
+			</if>
+			<if test="bankNo != null">
+				bank_no,
+			</if>
+			<if test="bankName != null">
+				bank_name,
+			</if>
+			<if test="decision != null">
+				decision,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="modifyTime != null">
+				modify_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="stuId != null">
+				#{stuId,jdbcType=VARCHAR},
+			</if>
+			<if test="name != null">
+				#{name,jdbcType=VARCHAR},
+			</if>
+			<if test="stuCollegeId != null">
+				#{stuCollegeId,jdbcType=VARCHAR},
+			</if>
+			<if test="stuCollegeName != null">
+				#{stuCollegeName,jdbcType=VARCHAR},
+			</if>
+			<if test="stuDsId != null">
+				#{stuDsId,jdbcType=VARCHAR},
+			</if>
+			<if test="stuDsName != null">
+				#{stuDsName,jdbcType=VARCHAR},
+			</if>
+			<if test="deptId != null">
+				#{deptId,jdbcType=VARCHAR},
+			</if>
+			<if test="officeId != null">
+				#{officeId,jdbcType=INTEGER},
+			</if>
+			<if test="telephone != null">
+				#{telephone,jdbcType=VARCHAR},
+			</if>
+			<if test="bankNo != null">
+				#{bankNo,jdbcType=VARCHAR},
+			</if>
+			<if test="bankName != null">
+				#{bankName,jdbcType=VARCHAR},
+			</if>
+			<if test="decision != null">
+				#{decision,jdbcType=TINYINT},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="modifyTime != null">
+				#{modifyTime,jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="cn.edu.uestc.smgt.pojo.AssistStudent">
+		update help_assist_student
+		<set>
+			<if test="stuId != null">
+				stu_id = #{stuId,jdbcType=VARCHAR},
+			</if>
+			<if test="name != null">
+				name = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="stuCollegeId != null">
+				stu_college_id = #{stuCollegeId,jdbcType=VARCHAR},
+			</if>
+			<if test="stuCollegeName != null">
+				stu_college_name = #{stuCollegeName,jdbcType=VARCHAR},
+			</if>
+			<if test="stuDsId != null">
+				stu_ds_id = #{stuDsId,jdbcType=VARCHAR},
+			</if>
+			<if test="stuDsName != null">
+				stu_ds_name = #{stuDsName,jdbcType=VARCHAR},
+			</if>
+			<if test="deptId != null">
+				dept_id = #{deptId,jdbcType=VARCHAR},
+			</if>
+			<if test="officeId != null">
+				office_id = #{officeId,jdbcType=INTEGER},
+			</if>
+			<if test="telephone != null">
+				telephone = #{telephone,jdbcType=VARCHAR},
+			</if>
+			<if test="bankNo != null">
+				bank_no = #{bankNo,jdbcType=VARCHAR},
+			</if>
+			<if test="bankName != null">
+				bank_name = #{bankName,jdbcType=VARCHAR},
+			</if>
+			<if test="decision != null">
+				decision = #{decision,jdbcType=TINYINT},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="modifyTime != null">
+				modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="cn.edu.uestc.smgt.pojo.AssistStudent">
+		update
+		help_assist_student
+		set stu_id = #{stuId,jdbcType=VARCHAR},
+		name =
+		#{name,jdbcType=VARCHAR},
+		stu_college_id =
+		#{stuCollegeId,jdbcType=VARCHAR},
+		stu_college_name =
+		#{stuCollegeName,jdbcType=VARCHAR},
+		stu_ds_id =
+		#{stuDsId,jdbcType=VARCHAR},
+		stu_ds_name =
+		#{stuDsName,jdbcType=VARCHAR},
+		dept_id = #{deptId,jdbcType=VARCHAR},
+		office_id = #{officeId,jdbcType=INTEGER},
+		telephone =
+		#{telephone,jdbcType=VARCHAR},
+		bank_no = #{bankNo,jdbcType=VARCHAR},
+		bank_name = #{bankName,jdbcType=VARCHAR},
+		decision =
+		#{decision,jdbcType=TINYINT},
+		create_time =
+		#{createTime,jdbcType=TIMESTAMP},
+		modify_time =
+		#{modifyTime,jdbcType=TIMESTAMP}
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+
+	<select id="selectByStuId" parameterType="String" resultMap="BaseResultMap">
+		select * from help_assist_student where stu_id =
+		#{stuId,jdbcType=VARCHAR}
+	</select>
+
+	<update id="updateByStuIdSelective" parameterType="cn.edu.uestc.smgt.pojo.AssistStudent">
+		update help_assist_student
+		<set>
+			<if test="name != null">
+				name = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="deptId != null">
+				dept_id = #{deptId,jdbcType=VARCHAR},
+			</if>
+			<if test="officeId != null">
+				office_id = #{officeId,jdbcType=INTEGER},
+			</if>
+			<if test="telephone != null">
+				telephone = #{telephone,jdbcType=VARCHAR},
+			</if>
+			<if test="bankNo != null">
+				bank_no = #{bankNo,jdbcType=VARCHAR},
+			</if>
+			<if test="bankName != null">
+				bank_name = #{bankName,jdbcType=VARCHAR},
+			</if>
+			<if test="decision != null">
+				decision = #{decision,jdbcType=TINYINT},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="modifyTime != null">
+				modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where stu_id = #{stuId,jdbcType=VARCHAR}
+	</update>
+	<!-- 根据学号删除助管 -->
+	<delete id="deleteByStuId" parameterType="String">
+		delete from
+		help_assist_student where stu_id = #{stuId,jdbcType=VARCHAR}
+	</delete>
+	<!-- 根据查询条件获取查询获得的数据量 -->
+	<select id="size" parameterType="Map" resultType="Long">
+		select count(*) from help_assist_student
+		<where>
+			<if test="stuId != null and stuId != ''">
+				AND stu_id like
+				CONCAT(CONCAT('%',
+				#{stuId,jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="name != null and name != ''">
+				AND name like
+				CONCAT(CONCAT('%',
+				#{name,jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="deptId != null">
+				AND dept_id in
+				<foreach item="item" index="index" collection="deptId" open="("
+					separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="bankName != null">
+				AND bank_name in
+				<foreach item="item" index="index" collection="bankName"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<!-- 分页查询获取获取助管信息 -->
+	<select id="selectByPageAndSelections" parameterType="cn.edu.uestc.smgt.common.QueryBase"
+		resultMap="BaseResultMap">
+		select * from help_assist_student
+		<where>
+			<if test="parameters.stuId != null and parameters.stuId != ''">
+				AND stu_id like
+				CONCAT(CONCAT('%',
+				#{parameters.stuId,jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="parameters.name != null and parameters.name != ''">
+				AND name like
+				CONCAT(CONCAT('%',
+				#{parameters.name,jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="parameters.deptId != null">
+				AND dept_id in
+				<foreach item="item" index="index" collection="parameters.deptId"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="parameters.bankName != null">
+				AND bank_name in
+				<foreach item="item" index="index" collection="parameters.bankName"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		order by dept_id,stu_id
+		limit #{firstRow},#{pageSize}
+	</select>
+</mapper>

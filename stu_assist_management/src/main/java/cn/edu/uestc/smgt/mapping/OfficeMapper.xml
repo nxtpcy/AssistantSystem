@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.edu.uestc.smgt.dao.OfficeMapper" >
+  <resultMap id="BaseResultMap" type="cn.edu.uestc.smgt.pojo.Office" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="office_name" property="officeName" jdbcType="VARCHAR" />
+    <result column="job_num" property="jobNum" jdbcType="INTEGER" />
+    <result column="job_work" property="jobWork" jdbcType="VARCHAR" />
+    <result column="job_time" property="jobTime" jdbcType="VARCHAR" />
+    <result column="responsibility" property="responsibility" jdbcType="VARCHAR" />
+    <result column="dept_id" property="deptId" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, office_name, job_num, job_work, job_time, responsibility, dept_id, create_time, modify_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from help_office
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from help_office
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="cn.edu.uestc.smgt.pojo.Office" >
+    insert into help_office (id, office_name, job_num, 
+      job_work, job_time, responsibility, 
+      dept_id, create_time, modify_time
+      )
+    values (#{id,jdbcType=INTEGER}, #{officeName,jdbcType=VARCHAR}, #{jobNum,jdbcType=INTEGER}, 
+      #{jobWork,jdbcType=VARCHAR}, #{jobTime,jdbcType=VARCHAR}, #{responsibility,jdbcType=VARCHAR}, 
+      #{deptId,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifyTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="cn.edu.uestc.smgt.pojo.Office" >
+    insert into help_office
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="officeName != null" >
+        office_name,
+      </if>
+      <if test="jobNum != null" >
+        job_num,
+      </if>
+      <if test="jobWork != null" >
+        job_work,
+      </if>
+      <if test="jobTime != null" >
+        job_time,
+      </if>
+      <if test="responsibility != null" >
+        responsibility,
+      </if>
+      <if test="deptId != null" >
+        dept_id,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="officeName != null" >
+        #{officeName,jdbcType=VARCHAR},
+      </if>
+      <if test="jobNum != null" >
+        #{jobNum,jdbcType=INTEGER},
+      </if>
+      <if test="jobWork != null" >
+        #{jobWork,jdbcType=VARCHAR},
+      </if>
+      <if test="jobTime != null" >
+        #{jobTime,jdbcType=VARCHAR},
+      </if>
+      <if test="responsibility != null" >
+        #{responsibility,jdbcType=VARCHAR},
+      </if>
+      <if test="deptId != null" >
+        #{deptId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="cn.edu.uestc.smgt.pojo.Office" >
+    update help_office
+    <set >
+      <if test="officeName != null" >
+        office_name = #{officeName,jdbcType=VARCHAR},
+      </if>
+      <if test="jobNum != null" >
+        job_num = #{jobNum,jdbcType=INTEGER},
+      </if>
+      <if test="jobWork != null" >
+        job_work = #{jobWork,jdbcType=VARCHAR},
+      </if>
+      <if test="jobTime != null" >
+        job_time = #{jobTime,jdbcType=VARCHAR},
+      </if>
+      <if test="responsibility != null" >
+        responsibility = #{responsibility,jdbcType=VARCHAR},
+      </if>
+      <if test="deptId != null" >
+        dept_id = #{deptId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="cn.edu.uestc.smgt.pojo.Office" >
+    update help_office
+    set office_name = #{officeName,jdbcType=VARCHAR},
+      job_num = #{jobNum,jdbcType=INTEGER},
+      job_work = #{jobWork,jdbcType=VARCHAR},
+      job_time = #{jobTime,jdbcType=VARCHAR},
+      responsibility = #{responsibility,jdbcType=VARCHAR},
+      dept_id = #{deptId,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

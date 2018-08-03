@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.edu.uestc.smgt.dao.UserMapper">
+	<resultMap id="BaseResultMap" type="cn.edu.uestc.smgt.pojo.User">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="login_name" property="loginName" jdbcType="VARCHAR" />
+		<result column="pwd" property="pwd" jdbcType="VARCHAR" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="dept_id" property="deptId" jdbcType="VARCHAR" />
+		<result column="role" property="role" jdbcType="TINYINT" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, login_name, pwd, modify_time, create_time, dept_id,
+		role
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from help_user
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from
+		help_user
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="cn.edu.uestc.smgt.pojo.User">
+		insert into help_user (id,
+		login_name, pwd,
+		modify_time, create_time, dept_id,
+		role)
+		values
+		(#{id,jdbcType=INTEGER}, #{loginName,jdbcType=VARCHAR},
+		#{pwd,jdbcType=VARCHAR},
+		#{modifyTime,jdbcType=TIMESTAMP},
+		#{createTime,jdbcType=TIMESTAMP}, #{deptId,jdbcType=VARCHAR},
+		#{role,jdbcType=TINYINT})
+	</insert>
+	<insert id="insertSelective" parameterType="cn.edu.uestc.smgt.pojo.User">
+		insert into help_user
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="loginName != null">
+				login_name,
+			</if>
+			<if test="pwd != null">
+				pwd,
+			</if>
+			<if test="modifyTime != null">
+				modify_time,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="deptId != null">
+				dept_id,
+			</if>
+			<if test="role != null">
+				role,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="loginName != null">
+				#{loginName,jdbcType=VARCHAR},
+			</if>
+			<if test="pwd != null">
+				#{pwd,jdbcType=VARCHAR},
+			</if>
+			<if test="modifyTime != null">
+				#{modifyTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deptId != null">
+				#{deptId,jdbcType=VARCHAR},
+			</if>
+			<if test="role != null">
+				#{role,jdbcType=TINYINT},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="cn.edu.uestc.smgt.pojo.User">
+		update help_user
+		<set>
+			<if test="loginName != null">
+				login_name = #{loginName,jdbcType=VARCHAR},
+			</if>
+			<if test="pwd != null">
+				pwd = #{pwd,jdbcType=VARCHAR},
+			</if>
+			<if test="modifyTime != null">
+				modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deptId != null">
+				dept_id = #{deptId,jdbcType=VARCHAR},
+			</if>
+			<if test="role != null">
+				role = #{role,jdbcType=TINYINT},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="cn.edu.uestc.smgt.pojo.User">
+		update help_user
+		set login_name = #{loginName,jdbcType=VARCHAR},
+		pwd =
+		#{pwd,jdbcType=VARCHAR},
+		modify_time =
+		#{modifyTime,jdbcType=TIMESTAMP},
+		create_time =
+		#{createTime,jdbcType=TIMESTAMP},
+		dept_id = #{deptId,jdbcType=VARCHAR},
+		role = #{role,jdbcType=TINYINT}
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+
+	<!-- 用户登录查询 -->
+	<select id="selectByLogin" parameterType="cn.edu.uestc.smgt.pojo.User"
+		resultMap="BaseResultMap">
+		select * from help_user
+		where login_name =
+		#{loginName,jdbcType=VARCHAR} AND pwd = #{pwd,jdbcType=VARCHAR}
+	</select>
+
+	<!-- 修改密码 -->
+	<update id="updatePwdByLoginName" parameterType="User">
+		update help_user
+		set pwd = #{pwd,jdbcType=VARCHAR},
+		modify_time=now()
+		where login_name =
+		#{loginName,jdbcType=VARCHAR}
+	</update>
+
+	<!--根据用户登录名查询用户是否存在 ljd -->
+	<select id="selectByLoginName" parameterType="String" resultMap="BaseResultMap">
+		select * from help_user
+		where login_name =
+		#{loginName,jdbcType=VARCHAR}
+	</select>
+	<!-- 根据用户登录名删除用户 ljd -->
+	<delete id="deleteByLoginName" parameterType="String">
+		delete from
+		help_user where login_name = #{loginName,jdbcType=VARCHAR}
+	</delete>
+	<!-- 获取参数条件的查询总记录条数 ljd -->
+	<select id="size" resultType="Long" parameterType="Map">
+		select count(*) from help_user
+		<where>
+			<if test="deptId != null">
+				AND dept_id in
+				<foreach item="item" index="index" collection="deptId" open="("
+					separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="loginName != null and loginName != ''">
+				AND login_name like
+				CONCAT(CONCAT('%',#{loginName,jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="role != null">
+				AND role = #{role,jdbcType=TINYINT}
+			</if>
+		</where>
+	</select>
+
+	<select id="selectByPageAndSelections" parameterType="cn.edu.uestc.smgt.common.QueryBase"
+		resultMap="BaseResultMap">
+		select id, login_name, modify_time, create_time, dept_id,
+		role
+		from
+		help_user
+		<where>
+			<if test="parameters.deptId != null">
+				AND dept_id in
+				<foreach item="item" index="index" collection="parameters.deptId"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="parameters.loginName != null and parameters.loginName != ''">
+				AND login_name like CONCAT(CONCAT('%',
+				#{parameters.loginName,jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="parameters.role != null">
+				AND role = #{parameters.role,jdbcType=TINYINT}
+			</if>
+		</where>
+		order by dept_id
+		limit #{firstRow},#{pageSize}
+	</select>
+	<select id="findRoles" parameterType="String" resultType="String">
+	    select help_role.role from help_user join help_role on help_user.role = help_role.role where login_name=#{username,jdbcType=VARCHAR}
+	</select>
+	<select id="findPermissions" resultType="String">
+	    select permission from help_resource
+	    <where>
+	    <if test="list != null and list.size()>0">
+	    id in 
+	    <foreach collection="list" index="index" item="item" open="(" separator="," close=")"> 
+            #{item} 
+        </foreach> 
+        </if>
+	    </where>
+	</select>
+	<select id="findResources" parameterType="String" resultType="String">
+	    select resource_ids from help_role where role=#{roleName,jdbcType=VARCHAR}
+	</select>
+</mapper>

@@ -1,0 +1,26 @@
+#dlg span {
+    width: 400px;
+}
+
+#dlg label {
+    width: 100px;
+}
+
+#dlg span {
+    width: 27%;
+}
+
+.dlg-span {
+    width: 27%;
+    display: inline-block;
+    height: 25px;
+    line-height: 25px;
+}
+
+.dlg-select {
+    /*margin-left: 80px;*/
+    display: inline-block;
+    width: 70.79%;
+    height: 25px;
+    /*line-height: 25px;*/
+}

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Row Editing in DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/demo.css">
+
+
+   <!--  <link rel="stylesheet" type="text/css" href="ques/css/font-awesome/css/font-awesome.min.css" /> -->
+
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="./js/common/common.js"></script>
+    <script src="./js/common/loader.js"></script>
+    <script src="./js/common/url.js"></script>
+
+    <style type="text/css">
+    .add-area {    
+    float: left;
+    margin: 0 35px;
+    height: 30px;
+    font-size: 20px;
+    cursor: pointer;
+    color: #999;
+   
+     }
+     .easyui-textbox items:hover{
+      visibility:visible;  
+     }
+
+    .dlg-span {
+        width: 21%;
+        display: inline-block;
+        height: 25px;
+        line-height: 25px;
+    }
+
+    .dlg-select {
+        /*margin-left: 80px;*/
+        border-radius: 2px;
+        display: inline-block;
+        width: 70.79%;
+        height: 25px;
+        /*line-height: 25px;*/
+    }
+    .select{
+       border-radius: 2px;
+       display: inline-block;
+       height: 22px; 
+    }
+
+
+    </style>
+
+    <script type="text/javascript">
+    var count=0;
+    var url=""; 
+    var Id=""; //因为每次编辑后，保存的时候找不到题目的id，因此用一个公共变量保存id
+    function doSearch() {
+        var type = $('#s_type').val();
+        var status=$('#s_status').val();
+        var title=$('#s_title').val();
+        var query={};
+        if(type){
+            query.type=type;
+        }
+        if(title){
+            query.title=title;
+        }
+        if(status){
+            query.status=status;
+        }
+         $('#tt').datagrid('load',query);
+    }
+    function newQues(){
+
+         // $('#dlg').dialog('open').dialog('center').dialog('setTitle', '添加题目');
+         $('#dlg').window('open').window('setTitle', '添加题目').window('resize',{top: '30px'});
+          $('#fm').form('clear');
+          url = baseUrl +"ques/add.do";  
+    }
+    //添加选项
+    function newChoice(){  
+        count++;    
+        //easyui-textbox通过此种方式添加，无法显示label，因此用下列方式来显示label
+       $('#fm_item').append('<div style="margin-bottom:10px"><input name="items" id="fm_op'+count+'" class="easyui-textbox"  style="width:93%"><span class="easyui-linkbutton del" onclick="delChoice(this)" id="del'+count+'"></span></div>').find('input').textbox({label:"选项:"});
+       $("#del"+count).linkbutton({iconCls:'icon-remove',plain:'true'});
+    }
+    function delChoice(t){
+        t.parentNode.innerHTML='';
+    }
+   //由于是动态添加的输入框，因此需要编辑的时候需要动态将框加进去
+     function changeItems(row){
+        var arr;
+        arr=row;
+       //针对单选或者多选
+        if(arr.items){
+            if(!(arr.items instanceof Array)){                  		
+		        arr.items = arr.items.split("|");     
+            }        
+             var prev = $(".add-area");
+            for(var i=0;i<arr.items.length;i++){
+                //去掉A\B\C\C...,获得选项的值
+                arr['items'+i]=arr.items[i].substring(2,arr.items[i].length);
+                prev.prev().append('<div style="margin-bottom:10px" class="add"><input id="fm_op'+i+'" name="items" class="easyui-textbox choice"  style="width:93%" value="'+arr['items'+i]+'"><span class="easyui-linkbutton del" onclick="delChoice(this)" id="del'+i+'"></span></div>').find('input').textbox({label:"选项:"}); 
+                 $("#del"+i).linkbutton({iconCls:'icon-remove',plain:'true'});
+          } 
+        }
+        //问答题
+        else{
+             var prev = $(".add-area");  
+             prev.prev().append('<div style="margin-bottom:10px" class="add"><input id="fm_op" name="items" class="easyui-textbox"  style="width:100%" ></div>').find('input').textbox({label:"选项:"}); 
+            
+        }
+              $("#fm_type").val(arr.type);
+              $("#fm_status").val(arr.status)
+              $("#fm_quesNo").attr("value",arr.quesNo) 
+             //由于easyui input框 $("#fm_title").val(arr.title)   赋值操作失败，采用下面的方式
+              $("#dlg").find('#fm_quesNo').textbox({value:arr.quesNo})
+              $("#dlg").find('#fm_title').textbox({value:arr.title})
+    }
+    //每次保存或者取消或者关闭dialog的时候必须将之前添加的选项清除
+    function destoryDialog(){   
+        Id=""; 
+		$("#fm_item")[0].innerHTML='';
+         $("#dlg").dialog("close");
+    }
+    function editQues(){
+        var row = $('#tt').datagrid('getSelected');      
+        if (row) {
+            changeItems(row);
+            // $('#dlg').dialog('open').dialog('center').dialog('setTitle', '编辑部门');		
+            $('#dlg').window('open').window('setTitle', '编辑部门').window('resize',{top: '30px'});
+            url = baseUrl + 'ques/update.do';
+            Id=row.id;
+        } else {
+            $.messager.alert('Warning', "请先选择一条数据");
+        }
+    }
+    function saveQues(){
+        var data = $("#fm").serializeObject();
+        data.id=Id;
+        if(data.quesNo<1){
+            $.messager.alert('Warning', '请确认表格中题号输入是否合法');
+            return false;
+        }
+       var arr=["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+       //问答题
+       if(data.type==2){
+           data.items="";
+       }
+       else{
+       //输入多个选项
+          if(data.items instanceof Array){  
+             var len=data.items.length;
+             var arr1=[];
+             for(var j=0;j<len;j++){
+                arr1[j]=data.items[j]
+              }
+           data.items=""
+           for(var i=0;i<len;i++){
+              if(i<len-1){
+                 data.items+=arr[i]+","+arr1[i]+"|";
+                }
+              else{
+                data.items+=arr[i]+","+arr1[i]
+                
+            }
+          }
+        }
+        //输入单个选项，且不是空（问答题）
+        else if(data.items!=""){
+           data.items=arr[0]+","+data.items;
+        }
+      }
+       
+        if ($("#fm").form('validate')) {
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(result) {
+                    if (result.status == 1) {
+                         destoryDialog();// close the dialog   
+                      $('#tt').datagrid('reload'); // reload the user data
+                    } else {
+                        $.messager.alert('Warning', result.message);
+                    }
+                }
+            })
+        } else {
+            $.messager.alert('Warning', '请确认表格中输入是否合法');
+        };
+    }
+    function destroyQues(){
+        var row = $('#tt').datagrid('getSelected');
+        if (row) {
+            $.messager.confirm('确认', '你确定要删除该题目吗？', function(r) {
+                if (r) {
+                    $.ajax({
+                        type: "POST",
+                        url: baseUrl + 'ques/delete.do?id='+row.id,
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        crossDomain: true,
+                        success: function(result) {
+                            if (result.status == 1) {
+                                $.messager.alert('Warning', result.message);
+                                $('#tt').datagrid('reload'); // reload the user data
+                            } else {
+                                $.messager.alert('Warning', result.errorMsg);
+                            }
+                        }
+                    })
+                }
+            });
+        } else {
+            $.messager.alert('Warning', '请先选择一条数据');
+        }
+    }
+    function openQues(){
+        //由于dialog默认的高度比较低，因此需动态设置其高度
+      $('#addZGdlg').css({height:window.innerHeight * 0.7});
+      $('#addZGdlg').dialog('open').dialog('center').dialog('setTitle', '预览问卷'); 
+      $('#openIframe')[0].src="./modal/techQuestionaire.html"
+    }
+    function getExcelUrl() {
+
+         var url = baseUrl + 'ques/ques_xls_download_manager.do';
+         $('#url').attr('href', url)    
+
+      }
+    function searchNum(){
+        console.log("可以查询吗")
+          $.ajax({
+                        type: "POST",
+                        url: baseUrl + 'ans/analysis.do',
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        crossDomain: true,
+                        success: function(result) {
+                            console.log(result)
+                            if (result.status == 1) {
+                                alert("总人数:"+result.body.total+", 已经完成调查问卷的人数："+result.body.alreadySurvey)
+                            } 
+                        }
+                    })
+    }
+    function getExcelOriUrl(){
+         var url = baseUrl + 'ans/survey_primary_xls_download_manager.do';
+         $('#url1').attr('href', url)    
+
+    }
+    function getExcelUniUrl(){
+         var url = baseUrl + 'ans/survey_xls_download_manager.do';
+         $('#url2').attr('href', url)    
+
+    }
+ 
+     $(function() {
+        $(".panel-tool-close").attr("onclick","destoryDialog();"); //给关闭dialog框绑定destroyDialog事件
+        $('#tt').datagrid({
+            title: '问卷调查',
+            iconCls: 'icon-edit',
+            width: "100%",
+            height: "auto",
+            rownumbers: true,
+            fit: true,
+            singleSelect: true,
+            idField: 'id',
+            url: baseUrl + 'ques/searchByPage.do',
+            pagination: true,
+            pageSize: 10,
+            pageList: [5, 10, 15, 20, 25, 30],
+            method: 'post',
+            columns: [
+                [ 
+                {
+                    field: 'quesNo',
+                    title: '题号',
+                    align: 'center',
+                    width: "10%"
+                }, 
+                {
+                    field: 'status',
+                    title: '状态',
+                    align: 'center',
+                    width: "20%",
+                    formatter: function(val, rec) {
+                        var value;
+                        if(val==0){
+                            value="必做"
+                        }
+                        else if(val==1){
+                            value="不做"
+                        }
+                        return value; 
+
+                    }
+                }, 
+                {
+                    field: 'type',
+                    title: '题目类型',
+                    width: "20%",
+                    align: 'center',
+                    formatter: function(val, rec) {
+                        var value;
+                        if(val==0){
+                           value="单项选择题"
+                        }
+                        else if(val==1){
+                            value="多项选择题"
+                        }
+                        else if(val==2){
+                            value="问答题"
+                        }
+                        return value; 
+
+                    }
+                },
+                {
+                    field: 'title',
+                    title: '题目描述',
+                    width: "20%",
+                    align: 'center',
+                    // editor: 'text'
+                },
+               {
+                    field: 'items',
+                    title: '选项',
+                    width: "30%",
+                    align: 'left',
+                    formatter: function(val, rec) {
+                        val=val.split("|");
+                        return val.join('<br>') 
+
+                    }
+                }
+                
+                ]
+            ],
+             toolbar: '#toolbar',
+        })
+   // var u="http://115.29.136.190:8080/help-front/modal/techQuestionaire.html";
+   //      var content = '<iframe src="' +u+ '" width="100%" height="99%" frameborder="0"></iframe>';
+   //   $('#addZGdlg').dialog({
+   //              content: content,
+   //              noheader: true,
+   //              border: true,
+   //              resizable: false,//定义对话框是否可调整尺寸。
+   //              maximized: true,//默认最大化
+   //              modal: false,
+   //    });
+    })
+    </script>
+
+    <body>
+  
+    <div id="toolbar">
+        <div style="padding:3px">
+            <!--             <span>部门 ID:</span>
+            <input id="deptId" style="line-height:26px;border:1px solid #ccc"> -->
+            <!-- <span>部门名称:</span>
+            <input id='cc' name='deptName' value=""> -->
+             <span class="span">
+                 状态：
+            </span>
+                <select class="select" id="s_status" name="status">
+                <option value="">全部</option>
+                <option value="0">必做</option>
+                <option value="1">不做</option>
+                </select>   
+            <span class="span">
+                 题目类型：
+            </span>
+                <select class="select" id="s_type" name="type">
+                <option value="">全部</option>
+                <option value="0">单项选择题</option>
+                <option value="1">多项选择题</option>
+                <option value="2">问答题</option>
+                </select>
+           
+            <span class="span">
+                 题目描述：
+            </span>
+            <input type="text" name="title" class="easyui-textbox" id="s_title">
+            <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()">查询</a>
+        </div>
+        <div>
+            
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newQues()">添加</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editQues(' + index + ')">编辑</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyQues()">删除</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="openQues()"> 预览问卷</a>
+            <a id="url" href="" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="getExcelUrl()"> 下载问卷</a>
+            <a id="num" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="searchNum()"> 查询完成人数</a>
+            <a id="url1" href="" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="getExcelOriUrl()"> 下载原始问卷结果</a>
+            <a id="url2" href="" class="easyui-linkbutton" iconCls="icon-save" plain="true" onclick="getExcelUniUrl()"> 下载合并问卷结果</a>
+        </div>
+    </div>
+    <table id="tt"></table>
+    <div id="dlg" class="easyui-dialog" style="width:500px;" closed="true" buttons="#dlg-buttons" data-options="draggable:false,modal:true">
+        <form id="fm" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">题目</div>
+            <div>
+                <input id="fm_id"" name="id"   style="display:none;" type="hidden"> 
+                
+            </div>
+            <div style="margin-bottom:10px">
+                <!-- <input id="fm_type" name="type" class="easyui-textbox" id="" required="true" label="题目类型:"  style="width:100%"> -->
+                 <span class="dlg-span">
+                 状态：
+            </span>
+                <select class="dlg-select" id="fm_status"  name="status">
+                <option value="0">必做</option>
+                <option value="1">不做</option>
+                </select>
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_quesNo" name="quesNo" class="easyui-numberbox" required="true" label="题号:" style="width:93%">
+            </div>
+            <div style="margin-bottom:10px">
+                <!-- <input id="fm_type" name="type" class="easyui-textbox" id="" required="true" label="题目类型:"  style="width:100%"> -->
+                 <span class="dlg-span">
+                 类型：
+            </span>
+                <select class="dlg-select" id="fm_type" name="type">
+                <option value="0">单项选择题</option>
+                <option value="1">多项选择题</option>
+                <option value="2">问答题</option>
+                </select>
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_title" name="title" class="easyui-textbox" required="true" label="题目描述:" style="width:93%">
+            </div>
+<!-- 			<div style="margin-bottom:10px">
+                <input id="fm_op1" name="items" class="easyui-textbox" label="选项:"  style="width:100%">
+            </div> -->
+            <div id="fm_item">
+           
+            
+            </div> 
+			
+			<div class="add-area" id="addChoice" onclick="newChoice()"><i class="easyui-linkbutton" iconCls="icon-add" plain="true" ></i></div> 
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveQues()" style="width:90px">保存</a>
+   <!--      <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">取消</a> -->
+   <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="destoryDialog()" style="width:90px">取消</a>
+    </div>
+
+    <!-- 添加预览问卷对话框 -->
+    <div id="addZGdlg" class="easyui-dialog" style="width:88%;" closed="true" buttons="#dlg-buttons1" data-options="draggable:false,modal:true" overflow="hidden">
+      <!--通过iframe在dialog中引入新的页面，需要将iframe的高度设为99%，否则无法高于父页面，出现滚动条-->
+       <iframe scrolling="auto" id='openIframe' frameborder="0"  style="width:100%;height:99%;"></iframe>
+    </div>
+    <div id="dlg-buttons1">
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="javascript:$('#addZGdlg').dialog('close')" style="width:90px">确定</a>
+    </div>
+</body>
+
+
+
+</html>

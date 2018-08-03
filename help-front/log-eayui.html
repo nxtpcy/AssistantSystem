@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Row Editing in DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/demo.css">
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="js/dist/md5.min.js"></script>
+    <script src="js/dist/base64.js"></script>
+    <script type="text/javascript" src="./js/common/common.js"></script>
+    <script type="text/javascript" src="./js/common/url.js"></script>
+    <script type="text/javascript" src="./js/common/loader.js"></script>
+    <script type="text/javascript" src='js/outlook2.js'></script>
+    <script type="text/javascript" src='js/common/month.js'></script>
+    <script type="text/javascript ">
+    var url;
+    var deptId = localStorage.deptId;
+    if (deptId) {
+        var isAdmin = 0;
+    } else {
+        var isAdmin = 1;
+    }
+
+
+    function doSearch() {
+        var st = "";
+        var et = ""
+        dateToLong2($('#startTime').datebox('getValue') + " 00:00")
+        if ($('#startTime').datebox('getValue')) {
+            st = dateToLong2($('#startTime').datebox('getValue') + " 00:00")
+            console.log(st);
+        }
+        if ($('#endTime').datebox('getValue')) {
+            et = dateToLong2($('#endTime').datebox('getValue') + " 24:00")
+            console.log(et);
+        }
+        $('#tt').datagrid('load', {
+            loginName: $('#loginName').val(), //用户名
+            deptId: $('#cc').combobox('getValue'), //deptName
+            logDesc: $('#logDesc').val(),
+            startTime: st,
+            endTime: et,
+
+        });
+    }
+
+    $(function() {
+        $('#tt').datagrid({
+            title: '日志信息管理',
+            iconCls: 'icon-edit',
+            width: "100%",
+            fit: true,
+            height: "auto",
+            singleSelect: true,
+            idField: 'id',
+            url: url_log,
+            pagination: true,
+            rownumbers: true,
+
+            // pageSize: 10,
+            // pageList: [5, 10, 15, 20],
+            pageSize: 30,
+            pageList: [5, 10, 15, 20, 25, 30],
+            method: 'post',
+            queryParams: {
+                deptId: deptId
+            },
+            columns: [
+                [{
+                    field: 'loginName',
+                    title: '用户名',
+                    align: 'center',
+                    width: "15%"
+                }, {
+                    field: 'deptName',
+                    title: '设岗学院/部门名称',
+                    width: "15%",
+                    align: 'center',
+                }, {
+                    field: 'userRole',
+                    title: '角色',
+                    width: "10%",
+                    align: 'center',
+                    formatter: function(val, rec) {
+                        console.log(val)
+                        if (val == 1) {
+                            return "老师"
+                        } else if (val == 0) {
+                            return "管理员"
+                        }
+
+                    }
+                }, {
+                    field: 'logIp',
+                    title: 'IP地址',
+                    width: "15%",
+                    align: 'center',
+                }, {
+                    field: 'logDesc',
+                    title: '操作名称',
+                    width: "25%",
+                    align: 'center',
+                }, {
+                    field: 'logDate',
+                    title: '时间',
+                    width: "20%",
+                    align: 'center',
+                    formatter: function(val, rec) {
+                        return getSmpFormatDateByLong(val, true)
+                    }
+                }, ]
+            ],
+            toolbar: '#toolbar',
+            onLoadError: function(XMLHttpRequest, textStatus, errorThrown) {
+                var tips = JSON.parse(XMLHttpRequest.responseText);
+                $.messager.alert('Warning', tips.message);
+            }
+        });
+        console.log(isAdmin);
+
+        $('#cc').combobox({
+            url: url_queryDept,
+            valueField: 'deptId',
+            textField: 'deptName',
+            method: 'post',
+            multiple: false,
+            loader: cloader,
+            panelHeight: 200
+        })
+        if (isAdmin === 0) {
+            console.log('isNotAdmin');
+            $('#cc').combobox('setValue', deptId);
+            $('#cc').combobox('disable');
+        }
+    });
+    </script>
+</head>
+
+<body>
+    <!-- <h2>用户管理系统</h2> -->
+    <!-- <p></p> -->
+    <div id="toolbar">
+        <div id="ts" style="padding:3px">
+            <span>用户名:</span>
+            <input id="loginName" style="line-height:26px;border:1px solid #ccc">
+            <span>学院／部门名称:</span>
+            <input id='cc' name='deptName' value="">
+            <span>操作:</span>
+            <input id="logDesc" style="line-height:26px;border:1px solid #ccc">
+            <span>时间:</span>
+            <input id="startTime" type="text" class="easyui-datebox" data-options="formatter:myformatter2,editable:false"">
+            <span>-</span>
+            <input id="endTime" type="text" class="easyui-datebox" data-options="formatter:myformatter2,editable:false"">
+            <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()">查询</a>
+        </div>
+        <!--  <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newUser()">新用户</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyUser()">删除</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="refreshUser()">重置密码</a> -->
+    </div>
+    <!-- 用户信息表格 -->
+    <table id="tt"></table>
+    <!-- 添加用户对话框 -->
+    <div id="dlg" class="easyui-dialog" style="width:500px" closed="true" buttons="#dlg-buttons">
+        <form id="fm" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">添加新用户</div>
+            <div style="margin-bottom:10px">
+                <input name="loginName" class="easyui-textbox" required="true" label="登录名:" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input name="deptId" class="easyui-textbox" required="true" label="部门编号" style="width:100%">
+            </div>
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveUser()" style="width:90px">保存</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">取消</a>
+    </div>
+</body>
+
+</html>

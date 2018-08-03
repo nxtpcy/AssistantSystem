@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Row Editing in DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/demo.css">
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="./js/common/common.js"></script>
+    <script type="text/javascript" src="./js/common/url.js"></script>
+    <script type="text/javascript" src='./js/common/month.js'></script>
+    <script type="text/javascript" src="./js/common/loader.js"></script>
+    <script type="text/javascript" src="./js/common/validate-extend.js"></script>
+    <script type="text/javascript ">
+    var url;
+    var dialog;
+    var datagr;
+    var formData;
+    var id;
+    // 编辑金额
+    function editJe() {
+        $('#dlg_je').dialog('open').dialog('center').dialog('setTitle', '设置金额');
+        $('#fm_je').form('clear');
+        dialog = $('#dlg_je');
+        datagr = $('#money');
+        formData = $('#fm_je')
+        url = url_addJe;
+    }
+    // 添加截止时间
+    function addDeadl() {
+        $('#dlg_deadline').dialog('open').dialog('center').dialog('setTitle', '设置年月以及截止时间');
+        $('#fm').form('clear');
+        dialog = $('#dlg_deadline');
+        datagr = $('#deadline');
+        datagr = $('#tt');
+        url = url_addDate;
+    }
+    //编辑截止时间
+    function editDeadl() {
+        $('#dlg_edit_deadline').dialog('open').dialog('center').dialog('setTitle', '编辑截止时间');
+        $('#fm_je').form('clear');
+        var row = $('#tt').datagrid('getSelected');;
+        console.log(row);
+        $('#editYear').textbox('setValue', row.helpYear);
+        $('#editMonth').textbox('setValue', row.helpMonth);
+        id = row.id;
+        dialog = $('#dlg_edit_deadline');
+        datagr = $('#tt');
+        url = url_editDate;
+    }
+    //保存日期
+    function saveDeadline() {
+        formData = $('#fm')
+        var d = formData.serializeObject();
+        var v = $('#deadline').datebox('getValue');
+        var time = $('#ss').timespinner('getValue');
+        console.log('timess:');
+        console.log(time);
+        if(time===""){
+            $.messager.alert('Warning', '请确认表格中输入是否合法');
+        }
+        var deadlinetime = v + ' ' + time;
+        d.deadlineTime = deadlinetime;
+
+        if (formData.form('validate')) {
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(d),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(result) {
+                    if (result.status == 1) {
+                        $.messager.alert('Warning', result.message);
+                        dialog.dialog('close'); // close the dialog
+                        datagr.datagrid('reload'); // reload the user data
+                    } else {
+                        $.messager.alert('Warning', result.message);
+
+                    }
+                }
+            })
+        } else {
+            $.messager.alert('Warning', '请确认表格中输入是否合法');
+        }
+    }
+
+    function saveEditDeadline() {
+
+        var v = $('#edit_deadline').datebox('getValue');
+        var time = $('#edit_ss').timespinner('getValue');
+        var deadlinetime = v + ' ' + time;
+        var d = {
+            "deadlineTime": deadlinetime,
+            "id": id
+        }
+        console.log(d);
+        $.ajax({
+            type: "POST",
+            url: url_editDate,
+            data: JSON.stringify(d),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+            },
+            crossDomain: true,
+            success: function(result) {
+                if (result.status == 1) {
+                    $.messager.alert('Warning', result.message);
+                    dialog.dialog('close'); // close the dialog
+                    datagr.datagrid('reload'); // reload the user data
+                } else {
+                    $.messager.alert('Warning', result.message);
+
+                }
+            }
+        })
+
+
+    }
+    //保存金额
+    function saveUser() {
+        var data = formData.serializeObject();
+        if (formData.form('validate')) {
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(result) {
+                    if (result.status == 1) {
+                        $.messager.alert('Warning', result.message);
+                        dialog.dialog('close'); // close the dialog
+                        datagr.datagrid('reload'); // reload data
+                    } else {
+                        $.messager.alert('Warning', result.message);
+                    }
+                }
+            })
+        } else {
+            $.messager.alert('Warning', '请确认表格中输入是否合法');
+        }
+    }
+    //删除日期
+    function destroyUser() {
+        var row = $('#tt').datagrid('getSelected');
+        console.log(row);
+        if (row) {
+            $.messager.confirm('确认', '你确定要删除该日期吗？', function(r) {
+                if (r) {
+                    var query = {
+                        id: row.id
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url: url_delDate + "?id=" + row.id,
+                        // data: JSON.stringify(query),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        crossDomain: true,
+                        success: function(result) {
+                            if (result.status == 1) {
+                                $.messager.alert('Warning', result.message);
+                                $('#tt').datagrid('reload'); // reload the user data
+                            } else {
+                                $.messager.alert('Warning', result.errorMsg);
+                            }
+                        }
+                    })
+                }
+            });
+        } else {
+            $.messager.alert('Warning', '请先选择一条数据');
+        }
+    }
+    $(function() {
+        $('#tt').datagrid({
+            title: '添加或删除月份以及截止时间',
+            iconCls: 'icon-edit',
+            width: "100%",
+            // height: 300,
+            singleSelect: true,
+            idField: 'id',
+            loader: dloader,
+            url: baseUrl + 'usr/date/getAll.do',
+            method: 'get',
+            columns: [
+                [{
+                    field: 'helpYear',
+                    title: '年',
+                    align: 'center',
+                    width: "33.3%"
+                }, {
+                    field: 'helpMonth',
+                    title: '月',
+                    align: 'center',
+                    width: "33.3%"
+                }, {
+                    field: 'deadlineTime',
+                    title: '截止时间',
+                    align: 'center',
+                    width: "33.3%",
+                    formatter: function(val, rec) {
+                        return getSmpFormatDateByLong(val, true)
+
+                    }
+                }]
+            ],
+            toolbar: '#Deadltl',
+            onLoadError: function(XMLHttpRequest, textStatus, errorThrown) {
+                var tips = JSON.parse(XMLHttpRequest.responseText);
+                $.messager.alert('Warning', tips.message);
+            }
+        });
+        $('#money').datagrid({
+            title: '最大金额设置',
+            iconCls: 'icon-edit',
+            width: "50%",
+            // height: 300,
+            singleSelect: true,
+            idField: 'id',
+            loader: jloader,
+            url: baseUrl + 'mgr/je/get.do',
+            method: 'post',
+            columns: [
+                [{
+                    field: 'je',
+                    title: '金额',
+                    align: 'center',
+                    width: "100%"
+                }]
+            ],
+            toolbar: '#moneytl'
+        });
+        $('#deadlinetb').datagrid({
+            title: '截止时间设置',
+            iconCls: 'icon-edit',
+            width: "50%",
+            // height: 300,
+            singleSelect: true,
+            idField: 'id',
+            loader: jloader,
+            url: baseUrl + 'mgr/je/get.do',
+            method: 'post',
+            columns: [
+                [{
+                    field: 'je',
+                    title: '截止时间',
+                    align: 'center',
+                    width: "100%"
+                }]
+            ],
+            // toolbar: '#Deadltl'
+        });
+
+        //设置日期选择框
+        $('#dd').datetimebox({
+            showSeconds: false,
+            required: true,
+            value: myFormatter(new Date()),
+            onSelect: function(date, old) {
+                var y = date.getFullYear();
+                var m = date.getMonth() + 1;
+                var d = date.getDate();
+                var time = $('#dd').datetimebox('spinner').spinner('getValue');
+                var dateTime = y + '-' + (m < 10 ? ("0" + m) : m) + '-' + (d < 10 ? ("0" + d) : d) + ' ' + time;
+                // $('#dd').datetimebox('setText', dateTime);
+                $('#dd').datetimebox('setText', dateTime);
+                $('#dd').datetimebox('hidePanel');
+                // $('#TextStartTime').val(dateTime);  
+            }
+        });
+    });
+    </script>
+</head>
+
+<body>
+    <!-- 月份信息表格 -->
+    <table id="tt" style="max-height: 400px;margin-bottom:20px;"></table>
+    <!-- 金额 -->
+    <div id="moneytl">
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editJe()">编辑金额</a>
+    </div>
+    <div style="margin-top: 10px">
+        <table id="money"></table>
+    </div>
+    <!-- 截止时间 -->
+    <div id="Deadltl">
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="addDeadl()">添加</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyUser()">删除</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editDeadl()">编辑</a>
+    </div>
+    <!-- 编辑金额 对话框-->
+    <div id="dlg_je" class="easyui-dialog" data-options="draggable:false,modal:true" style="width:500px" closed="true" buttons="#dlg-buttons">
+        <form id="fm_je" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">编辑最大金额</div>
+            <div style="margin-bottom:10px">
+                <!--     <span>年:</span>
+                <input id='year_c' name='helpYear' value=""> -->
+                <input type="text" id="rate" name="je" required="true" class="easyui-validatebox" validType="rateCheck[0,5000]" maxlength="6" />
+                <!-- <input name="je" class="easyui-textbox" required="true" label="金额" style="width:100%"> -->
+            </div>
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveUser()" style="width:90px">保存</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg_je').dialog('close')" style="width:90px">取消</a>
+    </div>
+    <!-- 添加年月截止时间对话框 -->
+    <div id="dlg_deadline" class="easyui-dialog" data-options="draggable:false,modal:true" style="width:500px" closed="true" buttons="#dlg-buttons">
+        <form id="fm" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">添加考核年月</div>
+            <div style="margin-bottom:10px">
+                <input name="helpYear" class="easyui-textbox" required="true" label="年" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input name="helpMonth" class="easyui-textbox" required="true" label="月" style="width:100%">
+            </div>
+        </form>
+        <form id="fm_deadline" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">编辑截止时间</div>
+            <div style="margin-bottom:10px">
+                <span>年月日:</span>
+                <input id="deadline" type="text" class="easyui-datebox" data-options="formatter:myformatter2,editable:false">
+                <input id="ss" class="easyui-timespinner" style="width:80px;" required="required" data-options="min:'00:00',showSeconds:true,editable:true">
+            </div>
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveDeadline()" style="width:90px">保存</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg_deadline').dialog('close')" style="width:90px">取消</a>
+    </div>
+    <!-- 编辑年月截止时间对话框 -->
+    <div id="dlg_edit_deadline" class="easyui-dialog" data-options="draggable:false,modal:true" style="width:500px" closed="true" buttons="#dlg-buttons">
+        <form id="fm_edit" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">考核年月</div>
+            <div style="margin-bottom:10px">
+                <input id="editYear" name="helpYear" class="easyui-textbox" required="true" label="年" style="width:100%" disabled="true">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="editMonth" name="helpMonth" class="easyui-textbox" required="true" label="月" style="width:100%" disabled="true">
+            </div>
+        </form>
+        <form id="fm_edit_deadline" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">编辑截止时间</div>
+            <div style="margin-bottom:10px">
+                <span>年月日:</span>
+                <input id="edit_deadline" type="text" class="easyui-datebox" data-options="formatter:myformatter2,editable:false">
+                <input id="edit_ss" class="easyui-timespinner" style="width:80px;" required="required" data-options="min:'00:00',showSeconds:true,editable:true">
+            </div>
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveEditDeadline()" style="width:90px">保存</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg_edit_deadline').dialog('close')" style="width:90px">取消</a>
+    </div>
+</body>
+
+</html>

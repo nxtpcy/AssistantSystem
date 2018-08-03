@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>模板页的使用</title>
+		<script src=""></script>
+		<script src="js/mui.min.js"></script>
+		<!-- <script type="text/javascript" src = "jquery.min.js"></script> -->
+		<!-- <script src="http://code.jquery.com/jquery-latest.js"></script> -->
+		 <script src="../js/common/url.js"></script>
+		<link href="css/mui.css" rel="stylesheet" />
+<!--引入-->  
+    <link rel="stylesheet" type="text/css" href="../ques/css/base.css" />
+    <link rel="stylesheet" type="text/css" href="../ques/css/edit.css" />
+    <link rel="stylesheet" type="text/css" href="../ques/css/font-awesome/css/font-awesome.min.css" />  
+
+
+    <link rel="stylesheet" type="text/css" href="../jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="../jquery-easyui/demo.css">
+
+   <!--  <link rel="stylesheet" type="text/css" href="ques/css/font-awesome/css/font-awesome.min.css" /> -->
+
+    <script type="text/javascript" src="../jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="../jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="../js/common/common.js"></script>
+    <script src="../js/common/loader.js"></script>
+		<script type="text/javascript" charset="UTF-8">
+			mui.init();
+		</script>
+		<style type="text/css">
+		body{
+			 font-size: 14px;
+             font-family: Verdana,"Microsoft YaHei","微软雅黑",Arial, Helvetica, sans-serif;
+		}
+		.question{
+	        /*border: 1px solid #dbdbdb;
+            margin: 4px 0;*/
+		}
+		/*.mui-quesNo{
+			margin-bottom: -2px;
+		}*/
+		.mui-content-padded{
+			display: inline-block;
+	        width: 90%;
+            min-height: 30px;
+            line-height: 30px;
+            position: relative;
+            vertical-align: middle;
+            margin: 0 auto;
+            word-break: break-all;
+		}
+		.edit:hover{
+            color: #b0c0e7;
+		}
+		.btn{
+			;
+			visibility: hidden;	
+			cursor: pointer;
+           
+		}
+		.question:hover .btn{
+            border: 1px solid #999;
+            border-radius: 3px;
+            font-size:12px;
+            background: #b0c0e7;
+			visibility: visible;
+            margin-top: 3px;
+		}
+		.mui-search{
+			margin-top: 50px;
+		}
+		table td{
+			padding:5px;
+		}
+		.mui-search{
+			font-size:16px;
+		}
+       
+        header{
+            margin-bottom: 20px;
+        }
+ .dlg-span {
+        width: 21%;
+        display: inline-block;
+        height: 25px;
+        line-height: 25px;
+    }
+
+    .dlg-select {
+        /*margin-left: 80px;*/
+        border-radius: 2px;
+        display: inline-block;
+        width: 76.79%;
+        height: 25px;
+        /*line-height: 25px;*/
+    }
+
+
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<!-- <a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a> -->
+			<h1 class="mui-title">问卷调查</h1>
+		</header>
+       
+		<div class="mui-search">
+		  <table>
+		  <tr>	
+		    <td>   
+            <span class="span">题目类型：</span> 
+            </td>
+            <td>  
+            <input id='cc' name='type' style="width:150px;height:35px;">               
+            </td>
+            <td>   
+            <span class="span">题目状态：</span> 
+            </td>
+            <td>  
+            <input id='dd' name='status' style="width:150px;height:35px;">               
+            </td>
+            <td>
+            <span class="span">
+                 题号：
+            </span>
+            </td>
+            <td>
+            <input type="text" name="quesno" class="easyui-numberbox" id="no" style="width:150px;height:35px;">
+            </td>
+            <td>
+            <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()" style="font-size:16px;">查询</a>
+            </td>
+          </tr>	
+          </table>
+        </div>
+       
+		
+		<div class="mui-content">
+			<!--此处是用来动态追加对应的提干内容-->
+
+		</div>
+
+		<!-- <div style="text-align: center;margin-top:10px;">
+			<button class="mui-btn mui-btn-blue" id="generate" style="width:80%">通过模板生成题目</button>
+		</div> -->
+         <div id="dlg" class="easyui-dialog" style="width:500px" closed="true" buttons="#dlg-buttons" data-options="draggable:false,modal:true">
+        <form id="fm" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">题目</div>
+            <div>
+                <input id="fm_id"" name="id"   style="display:none;" type="hidden"> 
+                
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_status"" name="status"   required="true" label="状态:" style="width:100%"> 
+                
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_quesNo" name="quesNo" class="easyui-numberbox" required="true" label="题号:" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_type" name="type" required="true" label="题目类型:"  style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_title" name="title" class="easyui-textbox" required="true" label="题目描述:" style="width:100%">
+            </div>
+           
+            <div style="margin-bottom:10px">
+                <input id="fm_op1" name="items" class="easyui-textbox" label="选项:"  style="width:100%" >
+            </div>
+            <div class="easyui-linkbutton" iconCls="icon-add" plain="true" id="addChoice" onclick="newChoice()"></div> 
+
+          
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveNewQues()" style="width:90px">保存</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">取消</a>
+    </div>
+           <!--  <div class="add-area" id="addChoice" onclick="newChoice()"><i class="easyui-linkbutton" iconCls="icon-add" plain="true" ></i></div> --> 
+         <!--   <a href="#" class="easyui-linkbutton" id="addChoice" plain="true" iconCls="icon-add" onclick="newChoice()" style="font-size:16px;">查询</a> -->
+  
+	</body>
+
+</html>
+<!--<script src="../js/jquery-2.0.3.min.js"></script>-->
+<script src="js/template-native.js"></script>
+
+<!--题干模板-->
+<script type="text/templete" id="radio-tigan">
+	<!--使用循环来控制创建的题目个数-->
+	<% for(var i in record){ var item=record[i]; %>
+
+	<div class="question q<%=(i)%>" id="<%=item.id%>">
+	    <span class="mui-quesNo edit" contenteditable="true" id="tihao<%=(i)%>"><%=item.quesNo%></span>
+		<div class="mui-content-padded edit" id="tigan<%=(i)%>" contenteditable="true"><%=item.title%></div>
+		<!--单选题-->
+		<% if(item.type==0){ %>
+		<div class="mui-input-group" id="option<%=(i)%>">
+			<!--此处使用循环来控制每道题目究竟生成多少选项-->
+			<% for(var j in item.items){ var res=item.items[j]; %>
+			<div class="mui-input-row mui-radio mui-left" id="item<%=(j)%>">
+				<label id="item-lab<%=(i+j)%>" class="item-lab edit" contenteditable="true"><%=res%></label>
+				<input name="radio<%=(i)%>" id="item-rdo<%=(j)%>" type="radio" class="radio<%=(i)%> edit">		
+			</div>
+			<% } %>
+            <input type="button" name="btn" value="添加" id="new<%=(i)%>" class="btn" onclick="newQues()">
+			<input type="button" name="btn" value="保存" id="save<%=(i)%>" class="btn" onclick="saveQues(<%=i%>,<%=item.items.length%>,<%=item.type%>)">
+            <input type="button" name="btn" value="删除" id="cancel<%=(i)%>" class="btn" onclick="deleteQues()">
+<!--             <a href="#" class="easyui-linkbutton btn" plain="true" iconCls="icon-save" onclick="saveQues(<%=i%>,<%=item.items.length%>,<%=item.type%>)"  >保存</a>
+            <a href="#" class="easyui-linkbutton btn" plain="true" iconCls="icon-remove" class="btn" onclick="deleteQues()">删除</a> -->
+		</div>
+		<% } %>
+		<!--多选题-->
+		<% if(item.type==1){ %>
+		     <div class="mui-input-group" id="option<%=(i)%>">
+			<!--此处使用循环来控制每道题目究竟生成多少选项-->
+			<% for(var j in item.items){ var res=item.items[j]; %>
+			<div class="mui-input-row mui-checkbox mui-left" id="item<%=(j)%>">
+				<label id="item-lab<%=(i+j)%>" class="item-lab edit" contenteditable="true"><%=res%></label>
+				<input name="checkbox<%=(i)%>" id="item-ckx<%=(j)%>" type="checkbox">		
+			</div>
+			<% } %>
+            <input type="button" name="btn" value="添加" id="new<%=(i)%>" class="btn" onclick="newQues()">
+			<input type="button" name="btn" value="保存" id="save<%=(i)%>" class="btn" onclick="saveQues(<%=i%>,<%=item.items.length%>,<%=item.type%>)">
+			<input type="button" name="btn" value="删除" id="cancel<%=(i)%>" class="btn" onclick="deleteQues()">
+		</div>
+		<% } %>
+		<!--问答题-->
+		<% if(item.type==2){ %>
+		     <div class="mui-input-group" id="option<%=(i)%>">
+			<textarea class="multi-input" name="textarea<%=(i)%>" id="item-txta<%=(i)%>" contenteditable="true"></textarea>';
+            <input type="button" name="btn" value="添加" id="new<%=(i)%>" class="btn" onclick="newQues()">
+			<input type="button" name="btn" value="保存" id="save<%=(i)%>" class="btn" onclick="saveQues(<%=i%>,<%=item.items.length%>,<%=item.type%>)">
+			<input type="button" name="btn" value="删除" id="cancel<%=(i)%>" class="btn" onclick="deleteQues()">
+		</div>
+		<% } %>	
+		    
+	</div>
+	<% } %>
+</script>
+<script>
+var cout=1;
+var url="";
+    function doSearch(){
+    	//获取查询条件
+    	var val1 = $('#cc').combobox('getValues');
+    	if (val1[0] == '') {
+            val1 = val1.slice(1)
+        }
+        var val2 = $('#dd').combobox('getValues');
+        if (val2[0] == '') {
+            val2 = val2.slice(1)
+        }
+        var val3=$('#no').val();
+
+        //利用图灵接口演示聊天布局 
+		template.config('escape', false);
+		//获取问卷数据
+		var record=[]; 
+		$.ajax({
+                type:'POST',
+                url:baseUrl+'ques/searchByPage.do?page=1&rows=10',              
+                dataType:"json",
+                async:false,
+                success:function(data,status){
+                    console.log(data.rows)
+                    var count=0;
+                    var context="";
+                    var aTemp=[];
+                    var count=0;
+                    for(var j=0;j<data.rows.length;j++){                      
+                    	// if((val1==data.rows[j].type&&val2==data.rows[j].status&&val3==data.rows[j].quesNo)||(val1==""&&val2==""&&val3=="")||(val1==""&&val2==""&&val3==data.rows[j].quesNo)||(val1==""&&val2==data.rows[j].status&&val3=="")||(val1==data.rows[j].type&&val2==""&&val3=="")||(val1==data.rows[j].type&&val2==data.rows[j].status&&val3=="")||(val1==data.rows[j].type&&val2==""&&val3==data.rows[j].quesNo)||(val1==""&&val2==data.rows[j].status&&val3==data.rows[j].quesNo))
+                        if((val1==data.rows[j].type&&val3==data.rows[j].quesNo)||(val1==data.rows[j].type&&val3=="")||(val1==""&&val3==data.rows[j].quesNo )||(val1==""&&val3==""))
+                    	{
+                    		aTemp[count]=data.rows[j];
+                            count++
+                    	}
+                    	 
+                    }
+                
+
+                    for(var i=0;i<aTemp.length;i++){                                           
+                        var temp=aTemp[i];
+                        console.log(aTemp[i])
+                        var arr="";
+                        if(temp.items!=""){             
+                          arr=temp.items.split("|");
+                        }
+                     record[i]={
+                     	id:temp.id,
+                     	quesNo:temp.quesNo,
+                     	title:temp.title,
+                     	items:arr,
+                     	type:temp.type
+                     }
+                     console.log(record)
+                 }
+             }
+         })
+		//追加模板消息 
+		var str = template('radio-tigan', {
+			"record": record
+		});
+		//$(".mui-content").html(str);
+		document.querySelector('.mui-content').innerHTML = str;
+    }
+	//相关的处理事件，动态获取时只需要将for循环替换为AJAX的SUCCESS事件中去就好了。 
+	//$("#generate").on("click", function() {
+	// document.getElementById("generate").addEventListener("tap",function(){	
+	function load(){
+		//利用图灵接口演示聊天布局 
+		template.config('escape', false);
+		//获取问卷数据
+		var record=[]; 
+		$.ajax({
+                type:'POST',
+                url:baseUrl+'ques/searchByPage.do?page=1&rows=10',
+               
+                dataType:"json",
+                async:false,
+                success:function(data,status){
+                
+                    var count=0;
+                    var context="";
+                    for(var i=0;i<data.rows.length;i++){
+                        Sdata=data.rows;
+                       
+                        var temp=data.rows[i];
+             
+                     var arr=temp.items.split("|");
+                     record[i]={
+                     	id:temp.id,
+                     	quesNo:temp.quesNo,
+                     	title:temp.title,
+                     	items:arr,
+                     	type:temp.type
+                     }
+                 }
+             }
+         })
+		//追加模板消息 
+		var str = template('radio-tigan', {
+			"record": record
+		});
+		//$(".mui-content").html(str);
+		document.querySelector('.mui-content').innerHTML = str;
+	}
+	function saveQues(t,k,m){
+	  var id=$(".q"+t).attr("id");
+      var quesNo=$("#tihao"+t)[0].innerHTML
+      var title=$("#tigan"+t)[0].innerHTML
+      var type=m;
+      var items="";
+      if(m!=2){
+      for(var i=0;i<k;i++){               	
+      	  if(i<k-1){
+              items+=$("#item-lab"+t+i)[0].innerHTML+"|";        
+          }
+            else if(i==k-1){
+         items+=$("#item-lab"+t+i)[0].innerHTML ;       
+         }
+        }      
+      }
+     var query={
+     	id:id,
+     	quesNo:quesNo,
+        title:title,
+        items:items,
+        type:type
+     }
+     $.ajax({
+                type: "POST",
+                url:  url = baseUrl + 'ques/update.do',
+                data: JSON.stringify(query),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(result) {
+                    if (result.status == 1) {
+                        alert('修改'+ result.message);
+                        load(); // reload the user data
+                    } else {
+                       alert('修改'+result.message);
+                    }
+                }
+            })
+      	}
+    function deleteQues(){
+
+     } 
+     function newQues(){
+         $('#dlg').dialog('open').dialog('center').dialog('setTitle', '添加题目');
+          $('#fm').form('clear');
+           $('#fm_type').combobox({
+            url:'type.json',
+            valueField: 'type',
+            textField: 'typeName',
+            method: 'post',
+            multiple: false,
+            loader: cloader,
+            panelHeight: 60,
+        })
+            $('#fm_status').combobox({
+            url:'status.json',
+            valueField: 'status',
+            textField: 'statusName',
+            method: 'post',
+            multiple: false,
+            loader: cloader,
+            panelHeight: 90,
+        })
+          url = baseUrl +"ques/add.do";
+    }
+
+    function newChoice(){      
+        cout++
+        var choiceNode = $("#addChoice")        
+        choiceNode.before('<div style="margin-bottom:10px"><input name="items" class="easyui-textbox"  style="width:100%"></div>').prev().find('input').textbox({id:"fm_op"+cout,label:"选项"});    
+    }
+    function saveNewQues(){
+        var data = $("#fm").serializeObject();
+        
+        console.log(data)
+        if(data.quesNo<1){
+            $.messager.alert('Warning', '请确认表格中题号输入是否合法');
+            return false;
+        }
+        data.status=0;
+        var arr=["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+        var len=data.items.length;
+        var arr1=[];
+        for(var j=0;j<len;j++){
+            arr1[j]=data.items[j]
+        }
+        data.items=""
+
+        for(var i=0;i<len;i++){
+            if(i<len-1){
+            data.items+=arr[i]+","+arr1[i]+"|";
+            }
+            else{
+            data.items+=arr[i]+","+arr1[i]  
+            }
+        }
+        if ($("#fm").form('validate')) {
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(result) {
+                    if (result.status == 1) {
+                        $('#dlg').dialog('close'); // close the dialog
+                        // $('#tt').datagrid('reload'); // reload the user data
+                        load();
+                    } else {
+                        $.messager.alert('Warning', result.message);
+                    }
+                }
+            })
+        } else {
+            $.messager.alert('Warning', '请确认表格中输入是否合法');
+        };
+    }
+     $(function(){
+     	$('#cc').combobox({
+            url:'quesType.json',
+            valueField: 'type',
+            textField: 'typeName',
+            method: 'post',
+            multiple: false,
+            loader: cloader,
+            panelHeight: 120,
+        })
+        $('#dd').combobox({
+            url:'quesStatus.json',
+            valueField: 'status',
+            textField: 'mean',
+            method: 'post',
+            multiple: false,
+            loader: cloader,
+            panelHeight: 90,
+        })
+     })
+
+
+	
+	load();
+    
+</script>

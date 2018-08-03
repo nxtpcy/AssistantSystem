@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Row Editing in DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/demo.css">
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <style>
+    #dlg span {
+        width: 27%;
+    }
+    
+    .dlg-span {
+        width: 27%;
+        display: inline-block;
+        height: 25px;
+        line-height: 25px;
+    }
+    
+    .dlg-select {
+        /*margin-left: 80px;*/
+        display: inline-block;
+        width: 70.79%;
+        height: 25px;
+        /*line-height: 25px;*/
+    }
+    </style>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="js/dist/md5.min.js"></script>
+    <script src="js/dist/base64.js"></script>
+    <script type="text/javascript" src="./js/common/common.js"></script>
+    <script type="text/javascript" src="./js/common/url.js"></script>
+    <script type="text/javascript" src="./js/common/loader.js"></script>
+    <script type="text/javascript" src='js/outlook2.js'></script>
+    <script type="text/javascript" src='js/modules/completeInfo.js'></script>
+    <script type="text/javascript ">
+    var url;
+
+    function doSearch() {
+        var val = $('#cc').combobox('getValue');
+
+        $('#tt').datagrid('load', {
+            loginName: $('#loginName').val(), //用户名
+            deptId: val //deptName
+        });
+    }
+
+
+    function newUser() {
+        //插入下拉框
+        $('#dept').append('<option>bitem6</option>');
+        console.log($('#dept'))
+        console.log($('#dept')[0].innerHTML)
+        var depts = [];
+        var query = {
+            rows: 200,
+            page: 1
+        }
+        var newHtml = '';
+        $.ajax({
+            type: 'POST',
+            async: false,
+            url: url_queryDept,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(query),
+            dataType: 'json',
+            success: function(data) {
+                console.log(data);
+                $.each(data.result, function(i, val) {
+                    var temp = val.deptId + val.deptName;
+                    var option = '<option value=' + val.deptId + '>' + temp + '</option>';
+                    newHtml = newHtml + option;
+                })
+                $('#dept')[0].innerHTML = newHtml;
+                //下拉框生成完毕
+                $('#dlg').dialog('open').dialog('center').dialog('setTitle', '添加新用户');
+                url = url_adduser;
+            },
+            error: function() {
+                error.apply(this, arguments);
+            }
+        });
+        console.log(depts);
+
+    }
+
+    function saveUser() {
+        var data = $("#fm").serializeObject();
+        // console.log
+        if ($("#fm").form('validate')) {
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(result) {
+                    if (result.status == 1) {
+                        $.messager.alert('Warning', result.message);
+                        $('#dlg').dialog('close'); // close the dialog
+                        $('#tt').datagrid('reload'); // reload the user data
+                    } else {
+                        $.messager.alert('Warning', result.message);
+                    }
+                }
+            })
+        } else {
+            // $.messager.alert('Warning', '请选择一条数据');
+            $.messager.alert('Warning', '请确认表格中输入是否合法');
+
+        };
+    }
+
+    function destroyUser() {
+        var row = $('#tt').datagrid('getSelected');
+        console.log(row);
+        if (row) {
+            $.messager.confirm('确认', '你确定要删除该用户吗？', function(r) {
+                if (r) {
+                    var query = {
+                        loginName: row.loginName
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url: url_delUser,
+                        data: JSON.stringify(query),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        crossDomain: true,
+                        success: function(result) {
+                            if (result.status == 1) {
+                                $.messager.alert('Warning', result.message);
+                                $('#tt').datagrid('reload'); // reload the user data
+                            } else {
+                                $.messager.alert('Warning', result.errorMsg);
+                            }
+                        }
+                    })
+                }
+            });
+        } else {
+            $.messager.alert('Warning', '请选择一条数据');
+
+        }
+    }
+
+    function refreshUser() {
+        var row = $('#tt').datagrid('getSelected');
+        console.log(row);
+        var psd = "111111";
+        // return false;
+        if (row) {
+            $.messager.confirm('确认', '你确定要重置该用户吗？', function(r) {
+                if (r) {
+                    var query = {
+                        "loginName": row.loginName,
+                        "firstPwd": btoa(md5(psd)),
+                        "secondPwd": btoa(md5(psd)),
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url: baseUrl + 'usr/user/resetPwd.do',
+                        data: JSON.stringify(query),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                        success: function(result) {
+                            if (result.status == 1) {
+                                // alert(result.message);
+                                $.messager.alert('Warning', '密码修改成功，默认密码为111111');
+                            } else {
+                                msgShow('系统提示', result.message);
+                                $.messager.alert('Warning', result.message);
+                            }
+
+                        }
+                    });
+                }
+            });
+        } else {
+            $.messager.alert('Warning', '请选择一条数据');
+        }
+    }
+    $(function() {
+        checkNeedComplete();
+        $('#tt').datagrid({
+            title: '用户信息管理',
+            iconCls: 'icon-edit',
+            width: "100%",
+            fit: true,
+            height: "auto",
+            rownumbers: true,
+            singleSelect: true,
+            idField: 'deptId',
+            url: url_queryUser,
+            pagination: true,
+            // pageSize: 10,
+            // pageList: [5, 10, 15, 20],
+            pageSize: 30,
+            pageList: [5, 10, 15, 20, 25, 30],
+            method: 'post',
+            columns: [
+                [{
+                    field: 'loginName',
+                    title: '登录名',
+                    align: 'center',
+                    width: "15%"
+                }, {
+                    field: 'deptId',
+                    title: '设岗学院/部门ID',
+                    align: 'center',
+                    width: "15%"
+                }, {
+                    field: 'deptName',
+                    title: '设岗学院/部门名称',
+                    width: "15%",
+                    align: 'center',
+                }, {
+                    field: 'teacherName',
+                    title: '指导老师姓名',
+                    width: "10%",
+                    align: 'center',
+                }, {
+                    field: 'teacherPhone',
+                    title: '指导老师电话',
+                    width: "20%",
+                    align: 'center',
+                }, {
+                    field: 'email',
+                    title: '邮箱',
+                    width: "10%",
+                    align: 'center',
+                },
+                {
+                    field: 'role',
+                    title: '角色',
+                    width: "15%",
+                    align: 'center',
+                    formatter: function(val, rec) {
+                        console.log(val)
+                        if (val == 1) {
+                            return "部门管理员"
+                        } else if (val == 0) {
+                            return "管理员"
+                        }
+
+                    }
+                }]
+            ],
+            toolbar: '#toolbar',
+            onLoadError: function(XMLHttpRequest, textStatus, errorThrown) {
+                var tips = JSON.parse(XMLHttpRequest.responseText);
+                $.messager.alert('Warning', tips.message);
+            }
+        });
+        $('#cc').combobox({
+            url: url_queryDept,
+            valueField: 'deptId',
+            textField: 'deptName',
+            method: 'post',
+            multiple: false,
+            loader: cloader,
+            panelHeight: 200,
+        });
+        //初始化按钮
+        if(parseInt(localStorage.needComleteInfo)===1){
+            var sbuttonCheck=true
+        }
+        $('#sbutton').switchbutton({
+            checked: sbuttonCheck,
+            onChange: function(checked) {
+                if (checked == true) {
+                    updateNeedComplete(1)
+                    return;
+                }
+                if (checked == false) {
+                    updateNeedComplete(0)
+
+                }
+            }
+        })
+
+    });
+    </script>
+</head>
+
+<body>
+    <!-- <h2>用户管理系统</h2> -->
+    <!-- <p></p> -->
+    <div id="toolbar">
+        <div id="ts" style="padding:3px">
+            <span>用户名:</span>
+            <input id="loginName" style="line-height:26px;border:1px solid #ccc">
+            <span>部门名称:</span>
+            <input id='cc' name='deptName' value="">
+            <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()">查询</a>
+            <!-- <a href="#" class="easyui-linkbutton" plain="true" >Search</a> -->
+        </div>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newUser()">新用户</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyUser()">删除</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="refreshUser()">重置密码</a>
+        <label class="lblname" id="authenTypeL">要求用户信息完善：</label>
+        <input id="sbutton" style="width:70px;height:25px">
+        
+    </div>
+    <!-- 用户信息表格 -->
+    <table id="tt"></table>
+    <!-- 添加用户对话框 -->
+    <div id="dlg" class="easyui-dialog" style="width:500px" closed="true" buttons="#dlg-buttons" data-options="draggable:false,modal:true">
+        <form id="fm" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">添加新用户</div>
+            <div style="margin-bottom:10px">
+                <input name="loginName" class="easyui-textbox" required="true" label="登录名:" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <span class="dlg-span">部门</span>
+                <select class="dlg-select" id="dept" class="" name="deptId"></select>
+            </div>
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveUser()" style="width:90px">保存</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">取消</a>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.edu.uestc.smgt.dao.BuzhuMapper">
+	<resultMap id="BaseResultMap" type="cn.edu.uestc.smgt.pojo.Buzhu">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="help_date" property="helpDate" jdbcType="VARCHAR" />
+		<result column="dept_id" property="deptId" jdbcType="VARCHAR" />
+		<result column="stu_id" property="stuId" jdbcType="VARCHAR" />
+		<result column="money" property="money" jdbcType="DOUBLE" />
+		<result column="szlbdm" property="szlbdm" jdbcType="INTEGER" />
+		<result column="shztm" property="shztm" jdbcType="INTEGER" />
+		<result column="remark" property="remark" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+		<result column="status_code" property="statusCode" jdbcType="TINYINT" />
+		<result column="type" property="type" jdbcType="TINYINT" />
+		<result column="submit_time" property="submitTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<resultMap id="BaseDTOResultMap" type="cn.edu.uestc.smgt.pojo.dto.BuZhuDTO">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="name" property="studentName" jdbcType="VARCHAR" />
+		<result column="bank_name" property="bankName" jdbcType="VARCHAR" />
+		<result column="bank_no" property="bankNo" jdbcType="VARCHAR" />
+		<result column="deptId" property="deptId" jdbcType="VARCHAR" />
+		<result column="studentId" property="stuId" jdbcType="VARCHAR" />
+		<result column="status_code" property="statusCode" jdbcType="TINYINT" />
+		<result column="help_date" property="helpDate" jdbcType="VARCHAR" />
+		<result column="type" property="type" jdbcType="TINYINT" />
+		<result column="submit_time" property="submitTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, help_date, dept_id, stu_id, money, szlbdm, shztm,
+		remark,
+		create_time, modify_time,
+		status_code,type,submit_time
+	</sql>
+	<sql id="Base_DTO_Column_List">
+		help_buzhu.id,
+		help_buzhu.help_date,
+		help_buzhu.dept_id as
+		deptId,
+		help_buzhu.stu_id as
+		studentId,
+		help_buzhu.money,
+		help_buzhu.szlbdm,
+		help_buzhu.shztm,
+		help_buzhu.remark,
+		help_buzhu.create_time,
+		help_buzhu.modify_time,
+		help_buzhu.submit_time,
+		help_buzhu.status_code,
+		help_buzhu.type,
+		help_assist_student.name,
+		help_assist_student.bank_no,
+		help_assist_student.bank_name
+	</sql>
+	<select id="getBuzhuByIds" resultMap="BaseResultMap"
+		parameterType="java.util.Map">
+		select
+		<include refid="Base_Column_List" />
+		from help_buzhu
+		<where>
+			<if test="idList != null and idList.size() >0">
+				id in
+				<foreach collection="idList" item="item" index="index" open="("
+					separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from help_buzhu
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from
+		help_buzhu
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="cn.edu.uestc.smgt.pojo.Buzhu">
+		insert into help_buzhu (id,
+		help_date, dept_id,
+		stu_id, money, szlbdm,
+		shztm, remark, create_time,
+		modify_time, status_code,type)
+		values (#{id,jdbcType=INTEGER},
+		#{helpDate,jdbcType=VARCHAR},
+		#{deptId,jdbcType=VARCHAR},
+		#{stuId,jdbcType=VARCHAR}, #{money,jdbcType=DOUBLE},
+		#{szlbdm,jdbcType=INTEGER},
+		#{shztm,jdbcType=INTEGER},
+		#{remark,jdbcType=VARCHAR},
+		now(),now(),
+		#{statusCode,jdbcType=TINYINT},
+		#{type,jdbcType=TINYINT}))
+	</insert>
+	<insert id="insertSelective" parameterType="cn.edu.uestc.smgt.pojo.Buzhu">
+		insert into help_buzhu
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="helpDate != null">
+				help_date,
+			</if>
+			<if test="deptId != null">
+				dept_id,
+			</if>
+			<if test="stuId != null">
+				stu_id,
+			</if>
+			<if test="money != null">
+				money,
+			</if>
+			<if test="szlbdm != null">
+				szlbdm,
+			</if>
+			<if test="shztm != null">
+				shztm,
+			</if>
+			<if test="remark != null">
+				remark,
+			</if>
+
+			<if test="statusCode != null">
+				status_code,
+			</if>
+			<if test="type != null">
+				type,
+			</if>
+			create_time,
+			modify_time
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="helpDate != null">
+				#{helpDate,jdbcType=VARCHAR},
+			</if>
+			<if test="deptId != null">
+				#{deptId,jdbcType=VARCHAR},
+			</if>
+			<if test="stuId != null">
+				#{stuId,jdbcType=VARCHAR},
+			</if>
+			<if test="money != null">
+				#{money,jdbcType=DOUBLE},
+			</if>
+			<if test="szlbdm != null">
+				#{szlbdm,jdbcType=INTEGER},
+			</if>
+			<if test="shztm != null">
+				#{shztm,jdbcType=INTEGER},
+			</if>
+			<if test="remark != null">
+				#{remark,jdbcType=VARCHAR},
+			</if>
+			<if test="statusCode != null">
+				#{statusCode,jdbcType=TINYINT},
+			</if>
+			<if test="type != null">
+				#{type,jdbcType=TINYINT},
+			</if>
+			now(),now()
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="cn.edu.uestc.smgt.pojo.Buzhu">
+		update help_buzhu
+		<set>
+			<if test="helpDate != null">
+				help_date = #{helpDate,jdbcType=VARCHAR},
+			</if>
+			<if test="deptId != null">
+				dept_id = #{deptId,jdbcType=VARCHAR},
+			</if>
+			<if test="stuId != null">
+				stu_id = #{stuId,jdbcType=VARCHAR},
+			</if>
+			<if test="money != null">
+				money = #{money,jdbcType=DOUBLE},
+			</if>
+			<if test="szlbdm != null">
+				szlbdm = #{szlbdm,jdbcType=INTEGER},
+			</if>
+			<if test="shztm != null">
+				shztm = #{shztm,jdbcType=INTEGER},
+			</if>
+			<if test="remark != null">
+				remark = #{remark,jdbcType=VARCHAR},
+			</if>
+			modify_time = now(),
+			<if test="statusCode != null">
+				status_code = #{statusCode,jdbcType=TINYINT},
+			</if>
+			<if test="type != null">
+				type = #{type,jdbcType=TINYINT},
+			</if>
+			<if test="submitTime != null">
+				submit_time = #{submitTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="cn.edu.uestc.smgt.pojo.Buzhu">
+		update help_buzhu
+		set help_date = #{helpDate,jdbcType=VARCHAR},
+		dept_id =
+		#{deptId,jdbcType=VARCHAR},
+		stu_id = #{stuId,jdbcType=VARCHAR},
+		money =
+		#{money,jdbcType=DOUBLE},
+		szlbdm = #{szlbdm,jdbcType=INTEGER},
+		shztm
+		=#{shztm,jdbcType=INTEGER},
+		remark = #{remark,jdbcType=VARCHAR},
+		modify_time = now(),
+		status_code =#{statusCode,jdbcType=TINYINT},
+		type =
+		#{type,jdbcType=TINYINT}
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+
+	<select id="existByStuIdAndHelpDate" resultType="java.lang.Integer"
+		parameterType="cn.edu.uestc.smgt.pojo.Buzhu">
+		select count(*) from help_buzhu where
+		stu_id=#{stuId,jdbcType=VARCHAR} and
+		help_date=#{helpDate,jdbcType=VARCHAR}
+	</select>
+
+	<!-- 查询出补助信息和学生信息，查询条件是helpDate, statusCode,deptId 过时的 -->
+	<select id="selectBuZhuAndStudentInfoWithSelections"
+		parameterType="cn.edu.uestc.smgt.pojo.Buzhu" resultType="cn.edu.uestc.smgt.pojo.dto.BuZhuDTO">
+		select
+		bz.help_date as helpDate,
+		bz.dept_id as deptId,
+		bz.stu_id as
+		stuId,
+		bz.money as
+		money,
+		bz.szlbdm as szlbdm,
+		bz.shztm as shztm,
+		bz.remark as remark,
+		bz.create_time as
+		createTime,
+		bz.modify_time as
+		modifyTime,
+		bz.submit_time as submitTime,
+		bz.status_code as statusCode,
+		ast.name as
+		studentName,
+		ast.bank_no as bankNo,
+		ast.bank_name as bankName
+		from
+		help_buzhu bz left
+		join help_assist_student ast on
+		bz.stu_id=ast.stu_id
+		<where>
+			<if test="statusCode != null">
+				status_code=#{statusCode,jdbcType=INTEGER}
+			</if>
+			<if test="deptId != null and deptId != ''">
+				and
+				bz.dept_id like
+				CONCAT(CONCAT('%',
+				#{deptId,jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="helpDate != null and helpDate != ''">
+				and bz.help_date like
+				CONCAT(CONCAT('%',
+				#{helpDate,jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="type != null">
+				and bz.type=#{type,jdbcType=TINYINT}
+			</if>
+			<if test="createTime != null">
+				<![CDATA[and bz.create_time >= #{createTime,jdbcType=TIMESTAMP} and bz.create_time <= last_day(#{createTime,jdbcType=TIMESTAMP})]]>
+			</if>
+		</where>
+	</select>
+
+	<!-- 查询出补助信息和学生信息，查询条件是helpDate, statusCode,deptId ,type, -->
+	<select id="selectBuZhuAndStudentInfoWithSelectionsByMap"
+		parameterType="java.util.Map" resultType="cn.edu.uestc.smgt.pojo.dto.BuZhuDTO">
+		select
+		bz.help_date as helpDate,
+		bz.dept_id as deptId,
+		bz.stu_id as
+		stuId,
+		bz.money as
+		money,
+		bz.szlbdm as szlbdm,
+		bz.shztm as shztm,
+		bz.remark as remark,
+		bz.create_time as
+		createTime,
+		bz.modify_time as
+		modifyTime,
+		bz.submit_time as submitTime,
+		bz.status_code as statusCode,
+		bz.type as type,
+		ast.name as
+		studentName,
+		ast.bank_no as bankNo,
+		ast.bank_name as bankName,
+		dept.dept_name as deptName
+		from
+		help_buzhu bz,
+		help_assist_student ast,
+		help_dept dept
+		<where>
+			bz.stu_id=ast.stu_id and dept.dept_id = bz.dept_id
+			<if test="statusCode != null">
+				and
+				bz.status_code=#{statusCode,jdbcType=INTEGER}
+			</if>
+			<if test="deptId != null">
+				and
+				bz.dept_id in
+				<foreach collection="deptId" item="item" index="index" open="("
+					separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="helpDate != null">
+				and bz.help_date in
+				<foreach collection="helpDate" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="type != null">
+				and bz.type=#{type,jdbcType=TINYINT}
+			</if>
+			<if test="submitTime != null">
+				<![CDATA[and bz.submit_time >= #{submitTime,jdbcType=TIMESTAMP} and bz.submit_time <= last_day(#{submitTime,jdbcType=TIMESTAMP})]]>
+			</if>
+			order by bz.help_date desc,bz.dept_id,bz.stu_id
+		</where>
+	</select>
+
+	<select id="getBuZhuRows" parameterType="cn.edu.uestc.smgt.common.QueryBase"
+		resultType="java.lang.Long">
+		select count(*) from help_buzhu join help_assist_student on
+		help_buzhu.stu_id =
+		help_assist_student.stu_id
+		<where>
+			<if test="parameters.studentId != null">
+				help_buzhu.stu_id=#{parameters.studentId,jdbcType=VARCHAR}
+			</if>
+			<if test="parameters.statusCode != null">
+				status_code=#{parameters.statusCode,jdbcType=TINYINT}
+			</if>
+			<if test="parameters.deptId != null and parameters.deptId.size() >0">
+				and
+				help_buzhu.dept_id in
+				<foreach collection="parameters.deptId" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="parameters.helpDate != null and parameters.helpDate.size()>0">
+				and help_date in
+				<foreach collection="parameters.helpDate" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="parameters.type != null">
+				and type=#{parameters.type,jdbcType=TINYINT}
+			</if>
+		</where>
+	</select>
+	<select id="getBuZhuByPage" parameterType="cn.edu.uestc.smgt.common.QueryBase"
+		resultMap="BaseDTOResultMap">
+		select
+		<include refid="Base_DTO_Column_List" />
+		from help_buzhu join help_assist_student on help_buzhu.stu_id =
+		help_assist_student.stu_id
+		<where>
+			<if test="parameters.studentId != null">
+				help_buzhu.stu_id=#{parameters.studentId,jdbcType=VARCHAR}
+			</if>
+			<if test="parameters.statusCode != null">
+				status_code=#{parameters.statusCode,jdbcType=TINYINT}
+			</if>
+			<if test="parameters.deptId != null and parameters.deptId.size() >0">
+				and
+				help_buzhu.dept_id in
+				<foreach collection="parameters.deptId" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="parameters.helpDate != null and parameters.helpDate.size()>0">
+				and help_date in
+				<foreach collection="parameters.helpDate" item="item" index="index"
+					open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="parameters.type != null">
+				and type=#{parameters.type,jdbcType=TINYINT}
+			</if>
+		</where>
+		order by help_buzhu.help_date desc,help_buzhu.dept_id,help_buzhu.stu_id 
+		<if test="firstRow != null and pageSize != null">
+			limit #{firstRow},#{pageSize}
+		</if>
+	</select>
+</mapper>

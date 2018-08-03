@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>助管管理系统</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link href="css/style.css" rel="stylesheet">
+    <script type="text/javascript" src="js/common/url.js"></script>
+    <script type="text/javascript" src="js/function/checkUser.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-default navbar-static-top nav-header" role="navigation">
+        <div class="container">
+            <div>
+                <div class="navbar-left">
+                    <a href="./index.html">助管管理系统</a>
+                </div>
+                <div id="nav-right" class="navbar-right mt-10">
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container content" id='index-container' style="visibility: hidden;">
+        <div class="nav-logo">
+            <a class="navbar-brand">
+                <img alt="Brand" src="images/logo.png">
+            </a>
+        </div>
+        <div class="actions-panel index-panel mt-20">
+            <div class="row cnt-mid">
+                <div class="col-md-4">
+                    <div class="panel panel-primary">
+                        <header class="cnt-mid-head">月考核管理系统</header>
+                        <div class="cnt-mid-img">
+                            <img src="./images/midlleicon-1.png" alt="">
+                        </div>
+                        <div class="cnt-mid-btn">
+                            <button onclick="jumpL('./index_SH.html')" class="btn btn-primary">月考核管理系统</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="panel panel-primary">
+                        <header class="cnt-mid-head">设岗招聘录用管理系统
+                        </header>
+                        <div class="cnt-mid-img">
+                            <img src="./images/midlleicon-2.png" alt="">
+                        </div>
+                        <div class="cnt-mid-btn">
+                            <button onclick="jumpL('./index_SG.html')" class="btn btn-success">设岗招聘录用管理系统</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="panel panel-primary">
+                        <header class="cnt-mid-head">其他</header>
+                        <div class="cnt-mid-img">
+                            <img src="./images/midlleicon-1.png" alt="">
+                        </div>
+                        <div class="cnt-mid-btn">
+                            <button onclick="jumpL('./index_QT.html')" class="btn btn-default">有待开发...</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row cnt-sec2">
+                <div class="col-md-8 cnt-sec2-panel">
+                    <header class="cnt-sec2-head">信息公告</header>
+                    <div class="cnt-sec2-info">
+                        <ul>
+                            <li><a href="">关于最近录入信息的通知</a>></li>
+                            <li><a href="">通知哪个学院已经录入信息了</a>></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4 cnt-sec2-panel">
+                    <header class="cnt-sec2-head"> 友情链接</header>
+                    <div class="cnt-sec2-info">
+                        <a href="http://gr.uestc.edu.cn/" class="btn btn-primary">研究生教育</a>
+                        <a href="http://yjsh.uestc.edu.cn/kdyh/index.html" class="btn btn-primary">研究生会</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">完善用户信息</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="myForm" class="form-horizontal" role="form" action="" method="post">
+                        <div class="form-group">
+                            <label for="input" class="col-sm-4 control-label">登录名</label>
+                            <div class="col-sm-8">
+                                <input id="ws_LoginName" class="form-control" name="loginName">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputPassword3" class="col-sm-4 control-label">指导老师姓名</label>
+                            <div class="col-sm-8">
+                                <input id="teacherName" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputPassword3" class="col-sm-4 control-label">指导老师电话</label>
+                            <div class="col-sm-8">
+                                <input id="teacherPhone" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="email" class="col-sm-4 control-label">邮箱</label>
+                            <div class="col-sm-8">
+                                <input id="teacherEmail" type="email" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">稍后再完善</button>
+                    <button type="button" class="btn btn-primary" onclick="saveInfo()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="navbar navbar-default navbar-footer mt-20">
+        <div style="clear:both"></div>
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-8" style="margin-top:10px;">
+                    <div>
+                        <p>
+                            清水河校区: 成都市高新区（西区）西源大道2006号 &nbsp; 邮编:&nbsp;611731 &nbsp;&nbsp;</p>
+                        <p>
+                            沙河校区: 成都市建设北路二段四号 &nbsp; 邮编:&nbsp;610054</p>
+                        <p>
+                            蜀ICP备&nbsp;05006379&nbsp;号&nbsp;&nbsp;&nbsp;I　川公网安备&nbsp;51019002000280&nbsp;号&nbsp;</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+<script type="text/javascript" src="js/dist/jquery-2.2.4.js"></script>
+<script type="text/javascript" src="js/dist/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/dist/vue.js"></script>
+<script type="text/javascript">
+function jumpL(url) {
+    if (localStorage.loginName) {
+        window.location.href = url;
+    } else {
+        alert('您还未登录或者页面还没加载完成！')
+    }
+
+}
+
+function init() {
+    var username = localStorage.loginName;
+    var html = "";
+    /*检测用户*/
+    if (username) {
+        html = "<span>" + "欢迎你：" + username + "</span>";
+    } else {
+        alert('用户为空，请先登录');
+        window.location.href = './login.html';
+    }
+    /*检测用户信息是否完善*/
+    if (localStorage.isComplete == 0) {
+        //信息不完整，打开模态框
+        $('#myModal').modal('show')
+        $('#ws_LoginName').val(localStorage.loginName);
+    }
+    $('#index-container').css('visibility', "visible")
+    $('#nav-right').empty();
+    html += "<a class='btn btn-default ml-20' onclick='loginOut()'>登出</a>";
+    $('#nav-right')[0].innerHTML = html;
+}
+
+function loginOut() {
+    console.log('loginout');
+    localStorage.loginName = '';
+    localStorage.clear();
+    console.log(localStorage.loginName);
+    $.ajax({
+        type: "post",
+        url: baseUrl + "usr/user/shiroLogout.do",
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        xhrFields: {
+            withCredentials: true
+        },
+        crossDomain: true,
+        async: false,
+        success: function(result) {
+            if (result.status == 1) {
+                localStorage.clear();
+                window.location.href = './login.html';
+
+            } else {
+                console.log(result);
+                alert(result);
+            }
+        },
+        error: function(message) {
+            alert(message);
+        }
+    });
+}
+
+function saveInfo(argument) {
+    if ($('#teacherName').val() === "" || $('#teacherPhone').val() === "") {
+        alert('请确认表单输入完整');
+        return false;
+    }
+    var query = {
+        id: id,
+        teacherName: $('#teacherName').val(),
+        teacherPhone: $('#teacherPhone').val(),
+        teacherEmail: $('#teacherEmail').val()
+    }
+    $.ajax({
+        type: "POST",
+        data: JSON.stringify(query),
+        url: baseUrl + "usr/user/updateInfo.do",
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        xhrFields: {
+            withCredentials: true
+        },
+        crossDomain: true,
+        async: false,
+        success: function(result) {
+            console.log(result);
+            if (result.status == 1) {
+                alert(result.message);
+                $('#myModal').modal('hide');
+                $('#index-container').css('visibility', "visible")
+                localStorage.isComplete = 1;
+            } else {
+                alert(result.message);
+            }
+        },
+        error: function(message) {
+            alert(message);
+        }
+    });
+}
+
+getStatus();
+//检查状态
+init();
+</script>
+
+</html>

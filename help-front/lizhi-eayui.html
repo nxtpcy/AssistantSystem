@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Row Editing in DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/demo.css">
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="./js/common/common.js"></script>
+    <script type="text/javascript" src="./js/common/url.js"></script>
+    <script type="text/javascript" src="./js/common/loader.js"></script>
+    <script type="text/javascript" src='js/outlook2.js'></script>
+    <script type="text/javascript" src='js/common/month.js'></script>
+    <style type="text/css">
+    #dlg span {
+        width: 400px;
+    }
+    
+    #dlg label {
+        width: 100px;
+    }
+    </style>
+    <script type="text/javascript ">
+    // var baseUrl = 'http://115.29.136.190:8080/help';
+    var url = '';
+
+    function doSearch() {
+        var st = "";
+        var et = ""
+        dateToLong2($('#startTime').datebox('getValue') + " 00:00")
+        if ($('#startTime').datebox('getValue')) {
+            st = dateToLong2($('#startTime').datebox('getValue') + " 00:00")
+        }
+        if ($('#endTime').datebox('getValue')) {
+            et = dateToLong2($('#endTime').datebox('getValue') + " 24:00")
+        }
+        $('#tt').datagrid('load', {
+            stuId: $('#stuId').val(), //用户名
+            stuName: $('#stuName').val(), //deptName
+            startTime: st,
+            endTime: et,
+
+        });
+
+    }
+
+    $(function() {
+        $('#tt').datagrid({
+            title: '离职助管信息管理',
+            iconCls: 'icon-edit',
+            width: "100%",
+            height: "auto",
+            fit: true,
+            singleSelect: true,
+            idField: 'deptId',
+            url: url_eWork.get,
+            rownumbers:true,
+            pagination: true,
+            pageSize: 30,
+            pageList: [5, 10, 15, 20, 25, 30],
+            method: 'post',
+            columns: [
+                [{
+                        field: 'stuId',
+                        title: '学号',
+                        align: 'center',
+                        width: "10%"
+                    }, {
+                        field: 'name',
+                        title: '姓名',
+                        align: 'center',
+                        width: "5%"
+                    },
+
+                    {
+                        field: 'stuCollegeId',
+                        title: '所在学院/部门编号',
+                        align: 'center',
+                        width: "12%"
+                    }, {
+                        field: 'stuCollegeName',
+                        title: '所在学院/部门名称',
+                        width: "15%",
+                        align: 'center',
+                    },
+                    // {
+                    //     field: 'dsName',
+                    //     title: '导师姓名',
+                    //     width: "auto",
+                    //     align: 'center',
+                    // }, 
+                    {
+                        field: 'bankName',
+                        title: '银行',
+                        width: "5%",
+                        align: 'center',
+                    }, {
+                        field: 'bankNo',
+                        title: '银行卡号',
+                        width: "15%",
+                        align: 'center',
+                    }, {
+                        field: 'telephone',
+                        title: '电话号码',
+                        width: "10%",
+                        align: 'center',
+                    }, {
+                        field: 'onJobInfo',
+                        title: '历史在职信息',
+                        width: "10%",
+                        align: 'center',
+                    }, {
+                        field: 'createTime',
+                        title: '创建时间',
+                        width: "10%",
+                        align: 'center',
+                        formatter: function(val, rec) {
+                            return getSmpFormatDateByLong(val, true)
+                        }
+                    }, {
+                        field: 'modifyTime',
+                        title: '修改时间',
+                        width: "10%",
+                        align: 'center',
+                        formatter: function(val, rec) {
+                            return getSmpFormatDateByLong(val, true)
+                        }
+                    }
+                ]
+            ],
+            toolbar: '#toolbar'
+
+        });
+    });
+    </script>
+</head>
+
+<body>
+    <!-- <h2>部门/学院管理系统</h2> -->
+    <!-- <p></p> -->
+    <div id="toolbar">
+        <div style="padding:3px">
+            <!--             <span>部门 ID:</span>
+            <input id="deptId" style="line-height:26px;border:1px solid #ccc"> -->
+            <span>学号:</span>
+            <input id="stuId" style="line-height:26px;border:1px solid #ccc">
+            <span>用户名:</span>
+            <input id="stuName" style="line-height:26px;border:1px solid #ccc">
+            <span>时间:</span>
+            <input id="startTime" type="text" class="easyui-datebox" data-options="formatter:myformatter2,parser:myParser">
+            <span>-</span>
+            <input id="endTime" type="text" class="easyui-datebox" data-options="formatter:myformatter2,parser:myParser">
+            <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()">查询</a>
+        </div>
+    </div>
+    <table id="tt"></table>
+    <div id="dlg" class="easyui-dialog" style="width:500px" closed="true" buttons="#dlg-buttons">
+        <form id="fm" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">学院/部门信息</div>
+            <div style="margin-bottom:10px">
+                <input id="fm_deptId" name="deptId" class="easyui-textbox" required="true" label="学院/部门编号:" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_deptName" name="deptName" class="easyui-textbox" required="true" label="学院/部门名称:" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input name="jobNum" class="easyui-numberbox" required="true" label="岗位总数:" type="number" style="width:100%">
+            </div>
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveDept()" style="width:90px">保存</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">取消</a>
+    </div>
+</body>
+
+</html>

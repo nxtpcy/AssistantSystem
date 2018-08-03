@@ -1,0 +1,7 @@
+eclipse.preferences.version=1
+encoding//src/main/java/cn/edu/uestc/smgt/controller/base/AssistStudentController.java=UTF-8
+encoding//src/main/java/cn/edu/uestc/smgt/controller/common/UserController.java=UTF-8
+encoding//src/main/java/cn/edu/uestc/smgt/dict/BuzhuStatusCodeType.java=UTF-8
+encoding//src/main/java/cn/edu/uestc/smgt/service/impl/BuZhuServiceImpl.java=UTF-8
+encoding//src/main/java/cn/edu/uestc/smgt/utils/DateUtils.java=UTF-8
+encoding//src/main/java/cn/edu/uestc/smgt/utils/ExcelUtil.java=UTF-8

@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Row Editing in DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/demo.css">
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <style>
+    #dlg span {
+        width: 27%;
+    }
+    
+    .dlg-span {
+        width: 27%;
+        display: inline-block;
+        height: 25px;
+        line-height: 25px;
+    }
+    
+    .dlg-select {
+        /*margin-left: 80px;*/
+        display: inline-block;
+        width: 70.79%;
+        height: 25px;
+        /*line-height: 25px;*/
+    }
+    </style>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="./js/common/common.js"></script>
+    <script type="text/javascript" src="./js/common/url.js"></script>
+    <script type="text/javascript" src="./js/common/loader.js"></script>
+    <script type="text/javascript" src="./js/common/validate-extend.js"></script>
+    <script type="text/javascript ">
+    var url;
+    var s_deptId = ''
+        /*全校学生信息库的查询*/
+    function doStuSearch() {
+        var val = $('#stu_cc').combobox('getValue');
+        // var deptIds = val.join(',')
+        $('#addZGtable').datagrid('load', {
+            stuId: $('#stu_stuId').val(), //用户名
+            stuName: $('#stu_name').val(), 
+            bankName: $('#stu_bankName').val(),
+            deptId: val //deptName
+        });
+    }
+
+    function doSearch() {
+        var val = $('#cc').combobox('getValues');
+        var val = $('#cc').combobox('getValues');
+        if (val[0] == '') {
+            val = val.slice(1)
+        }
+        var deptIds = val.join(',')
+
+        $('#tt').datagrid('load', {
+            stuId: $('#stuId').val(), //用户名
+            name: $('#name').val(), //用户名
+            bankName: $('#bankName').val(),
+            deptId: deptIds,
+            type: $('#officeType').combobox('getValue'),
+            statusNeedCompleteQues: $('#statusNeedCompleteQues').combobox('getValue'),
+            statusCompleteQues: $('#complete').combobox('getValue'),
+                // deptId: s_deptId
+
+        });
+
+    }
+
+    function judgeRow(rows) {
+        if (rows.length === 0) {
+            $.messager.alert('Warning', '请选择一条数据');
+            return false;
+        }
+        if (rows.length != 1) {
+            $.messager.alert('Warning', '只能选择一条数据');
+            return false;
+        }
+        return true
+    }
+    //编辑助管——弹出对话框
+    function editUser() {
+        var rows = $('#tt').datagrid('getSelections');
+        if (judgeRow(rows)) {
+            var row = rows[0];
+        } else {
+            return false
+        }
+        $('#add_deptId').append('<option>bitem6</option>');
+
+        var depts = [];
+        var query = {
+            rows: 200,
+            page: 1
+        }
+        var newHtml = '';
+        if (row) {
+            $.ajax({
+                type: 'POST',
+                async: false,
+                url: url_queryDept,
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(query),
+                dataType: 'json',
+                success: function(data) {
+                    console.log(data);
+                    $.each(data.result, function(i, val) {
+                        var temp = val.deptId + val.deptName;
+                        var option = '<option value=' + val.deptId + '>' + temp + '</option>';
+                        newHtml = newHtml + option;
+                    })
+                    $('#add_deptId')[0].innerHTML = newHtml;
+                    $('#dlg').dialog('open').dialog('center').dialog('setTitle', '编辑助管信息');
+                    $('#fm').form('clear');
+                    $("#add_stuId").textbox('setValue', row.stuId);
+                    $("#add_stuId").textbox({
+                        disabled: true
+                    });
+
+                    $("#add_name").textbox('setValue', row.name);
+                    $("#add_name").textbox({
+                        disabled: true
+                    });
+                    // $("#add_deptId").textbox('setValue', row.deptId);
+                    $("#add_deptId").val(row.deptId);
+
+                    // $("#add_bankName").textbox('setValue', row.bankName);
+                    $("#add_bankName").val(row.bankName);
+
+                    $("#add_bankNo").textbox('setValue', row.bankNo);
+                    $("#add_officeName").textbox('setValue', row.officeName);
+                    $("#add_jobTime").textbox('setValue', row.jobTime);
+
+                    console.log('row.typeName' + row.typeName);
+
+                    switch (row.typeName) {
+                        case '行政事务':
+                            $("#add_typeName").val(0);
+                            break;
+                        case '学生事务':
+                            $("#add_typeName").val(1);
+                            break;
+                        case '研究性工作':
+                            $("#add_typeName").val(2);
+                            break;
+
+                    }
+                    // $("#add_typeName").textbox('setValue', row.typeName);
+
+                    $("#add_telephone").textbox('setValue', row.telephone);
+                    $("#add_email").textbox('setValue', row.email);
+
+                    url = url_editZG;
+                    // return data.result;
+
+                },
+                error: function() {
+                    error.apply(this, arguments);
+                }
+            });
+        } else {
+            // alert('请先选择一名助管')
+            $.messager.alert('Warning', "请先选择一条数据");
+        }
+        url = url_editZG;
+
+    }
+    // 添加助管对话框
+    function newZG() {
+        $('#addZGdlg').dialog('open').dialog('center').dialog('setTitle', '添加助管信息');
+        // $('#fm').form('clear');
+    }
+
+    function saveZG() {
+        var row = $('#addZGtable').datagrid('getSelections');
+        var ids = [];
+        $.each(row, function(i, val) {
+            // console.log();
+            ids.push(val.stuId);
+        })
+        var stuIds = ids.join(',')
+        console.log(ids);
+        if (row) {
+            var data = {
+                "stuIds": stuIds
+            }
+            $.ajax({
+                type: "POST",
+                url: zhuguan_url.addZhuguan,
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(data),
+                dataType: "json",
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(result) {
+                    if (status == 0) {
+                        $.messager.alert('Warning', result.message);
+                        $('#addZGdlg').dialog('close'); // close the dialog
+                        $('#tt').datagrid('reload'); // reload the user data
+                    } else {
+                        $.messager.alert('Warning', result.message);
+                    }
+                }
+            })
+        } else {
+            $.messager.alert('Warning', "请先选择一条数据");
+        }
+    }
+
+    function addZGEx() {
+        $('#addZG').dialog('open').dialog('center').dialog('setTitle', '添加助管信息');
+        $('#fmEx').form('clear');
+    }
+    //添加助管——通过文件方式
+    function uploadExcel() {
+        var formData = new FormData();
+        var fileObj = document.getElementById("myfile").files[0];
+        console.log(fileObj);
+        formData.append('uploadExcel', fileObj);
+        console.log(formData);
+        $.ajax({
+            url: url_uploadFile,
+            type: 'POST',
+            cache: false,
+            data: formData,
+            processData: false,
+            contentType: false
+        }).done(function(res) {
+            res = JSON.parse(res);
+            console.log(res);
+
+            $.messager.alert('Warning', res.message);
+            $('#addZG').dialog('close');
+            $('#tt').datagrid('reload');
+        }).fail(function(res) {
+            $.messager.alert('Warning', res.message);
+        });
+    }
+    //编辑助管——提交
+    function saveUser() {
+        var data = $("#fm").serializeObject();
+
+        console.log(data);
+        data.stuId = $("#add_stuId").textbox('getValue');
+        data.name = $("#add_name").textbox('getValue');
+
+        if ($("#fm").form('validate')) {
+            $.ajax({
+                type: "POST",
+                url: url_editZG,
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(result) {
+                    if (result.status == 1) {
+                        $.messager.alert('Warning', result.message);
+                        $('#dlg').dialog('close'); // close the dialog
+                        $('#tt').datagrid('reload'); // reload the user data
+                    } else {
+                        $.messager.alert('Warning', result.message);
+                    }
+                }
+            })
+        } else {
+            $.messager.alert('Warning', '请确认表格中输入是否合法');
+        }
+    }
+    //离职
+    function outJob() {
+        var rows = $('#tt').datagrid('getSelections');
+        if (judgeRow(rows)) {
+            var row = rows[0];
+        } else {
+            return false
+        }
+        // var row = $('#tt').datagrid('getSelected');
+        console.log(row);
+        if (row) {
+            $.messager.confirm('确认', '确认将该助管转为离职状态吗？', function(r) {
+                if (r) {
+                    $.ajax({
+                        type: "POST",
+                        url: url_eWork.change + "?stuIds=" + row.stuId,
+                        // data: JSON.stringify(query),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        crossDomain: true,
+                        success: function(result) {
+                            if (result.status == 0) {
+                                $.messager.alert('Warning', result.message);
+                                $('#tt').datagrid('reload');
+                                $('#tt').datagrid('unselectAll'); // reload the 
+                            } else {
+                                $.messager.alert('Warning', result.message);
+                            }
+                        }
+                    })
+                }
+            });
+        } else {
+            $.messager.alert('Warning', "请先选择一条数据");
+        }
+    }
+    //删除助管
+    function destroyUser() {
+        var rows = $('#tt').datagrid('getSelections');
+        if (judgeRow(rows)) {
+            var row = rows[0];
+        } else {
+            return false
+        }
+        // var row = $('#tt').datagrid('getSelected');
+        console.log(row);
+        if (row) {
+            $.messager.confirm('确认', '你确定要删除该助管吗？', function(r) {
+                if (r) {
+                    var query = {
+                        stuId: row.stuId
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url: url_delZG,
+                        data: JSON.stringify(query),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        crossDomain: true,
+                        success: function(result) {
+                            if (result.status == 1) {
+                                $.messager.alert('Warning', result.message);
+
+                                $('#tt').datagrid('reload'); // reload the user data
+                            } else {
+                                $.messager.alert('Warning', result.errorMsg);
+
+                            }
+
+                        }
+                    })
+                }
+            });
+        } else {
+            $.messager.alert('Warning', "请先选择一条数据");
+        }
+    }
+
+    function getDept() {
+        var query = {
+            rows: 200,
+            page: 1
+        }
+        $.ajax({
+            type: 'POST',
+            url: baseUrl + 'base/dept/list.do',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(query),
+            dataType: 'json',
+            async: false,
+            success: function(data) {
+                console.log('getDept');
+            },
+            error: function() {
+                // error.apply(this, arguments);
+            }
+        });
+    }
+
+    function setCC(val, len) {
+        $('#cc').combobox('setText', '');
+        if (val == '全部') {
+            $('#cc').combobox('setValues', '');
+        }
+    }
+
+    /*调查问卷的开关*/
+    function toggleSuvey(str) {
+
+        if (str === 'open') {
+            var url = url_openSurvey;
+        } else {
+            var url = url_closeSurvey;
+        }
+        var rows = $('#tt').datagrid('getSelections');
+
+        if (rows.length === 0) {
+            $.messager.alert('Warning', '请选择一条数据');
+            return false;
+        }
+        var ids = '';
+        $.each(rows, function(i, val) {
+            ids = val.id + ',' + ids
+        });
+        var query = {
+            ids: ids
+        }
+        $.ajax({
+            type: 'POST',
+            url: url + "?ids=" + ids,
+            contentType: "application/json; charset=utf-8",
+            // data: JSON.stringify(query),
+            dataType: 'json',
+            async: false,
+            success: function(result) {
+                if (result.status == 1) {
+                    $.messager.alert('Warning', result.message);
+                    $('#tt').datagrid('reload'); // reload the user data
+                } else {
+                    $.messager.alert('Warning', result.errorMsg);
+
+                }
+            },
+            error: function() {
+                // error.apply(this, arguments);
+            }
+        });
+
+    }
+
+    function clearSuvey() {
+        $.ajax({
+            type: 'POST',
+            url: baseUrl + 'base/stu/surveyInit.do',
+            contentType: "application/json; charset=utf-8",
+            // data: JSON.stringify(query),
+            dataType: 'json',
+            async: false,
+            success: function(result) {
+                if (result.status == 1) {
+                    $.messager.alert('Warning', result.message);
+                    $('#tt').datagrid('reload'); // reload the user data
+                } else {
+                    $.messager.alert('Warning', result.errorMsg);
+                }
+            },
+            error: function() {
+                // error.apply(this, arguments);
+            }
+        });
+    }
+    $(function() {
+        /*获取dept列表*/
+        getDept();
+        var selectAll = false;
+        var onselect = false
+
+        $('#downMB').attr('href', baseUrl + 'base/stu/downloadMB.do');
+        $('#tt').datagrid({
+            title: '助管信息管理',
+            iconCls: 'icon-edit',
+            width: "100%",
+            height: "auto",
+            fit: true,
+            rownumbers: true,
+            singleSelect: false,
+            idField: 'id',
+            url: url_queryZhuguan,
+            pagination: true,
+            pageSize: 30,
+            pageList: [5, 10, 15, 20, 25, 30, 100, 200],
+            method: 'post',
+            columns: [
+                [{
+                    field: 'id',
+                    checkbox: true
+                }, {
+                    field: 'stuId',
+                    title: '学号',
+                    align: 'center',
+                    width: "8%"
+                }, {
+                    field: 'name',
+                    title: '姓名',
+                    align: 'center',
+                    width: "6%"
+                }, {
+                    field: 'deptId',
+                    title: '设岗学院/部门编号',
+                    align: 'center',
+                    width: "7%"
+                }, {
+                    field: 'deptName',
+                    title: '设岗学院/部门名称',
+                    width: "10%",
+                    align: 'center',
+                }, {
+                    field: 'officeName',
+                    title: '岗位科室名称',
+                    width: "8%",
+                    align: 'center',
+                }, {
+                    field: 'typeName',
+                    title: '岗位类型',
+                    width: "5%",
+                    align: 'center',
+                }, {
+                    field: 'jobTime',
+                    title: '聘期',
+                    width: "10%",
+                    align: 'center',
+                }, {
+                    field: 'email',
+                    title: '电子邮件',
+                    width: "10%",
+                    align: 'center',
+                }, {
+                    field: 'bankName',
+                    title: '银行名称',
+                    width: "8%",
+                    align: 'center',
+                }, {
+                    field: 'bankNo',
+                    title: '银行卡号',
+                    width: "10%",
+                    align: 'center',
+                }, {
+                    field: 'telephone',
+                    title: '电话号码',
+                    width: "8%",
+                    align: 'center',
+                }, {
+                    field: 'statusCompleteQues',
+                    title: '问卷调查已做',
+                    width: "8%",
+                    align: 'center',
+                    formatter: function(val, rec) {
+                        if (val === 0) {
+                            return '未做'
+                        } else {
+                            return '已做'
+                        }
+
+                    }
+                }, {
+                    field: 'statusNeedCompleteQues',
+                    title: '需要填写问卷调查',
+                    width: "8%",
+                    align: 'center',
+                    formatter: function(val, rec) {
+                        if (val === 0) {
+                            return '不需要'
+                        } else {
+                            return '需要'
+                        }
+
+                    }
+                }]
+            ],
+            toolbar: '#toolbar',
+            onLoadError: function(XMLHttpRequest, textStatus, errorThrown) {
+                var tips = JSON.parse(XMLHttpRequest.responseText);
+                $.messager.alert('Warning', tips.message);
+            }
+        });
+        $('#addZGtable').datagrid({
+            title: '添加助管，删除助管，编辑助管',
+            iconCls: 'icon-edit',
+            width: "100%",
+            height: "auto",
+            singleSelect: false,
+            idField: 'id',
+            url: baseUrl + 'base/stu/searchStudent1.do',
+            pagination: true,
+            pageSize: 15,
+            // pageList: [5, 10, 15, 20],
+            pageList: [15, 20, 30, 100, 200],
+            method: 'post',
+            columns: [
+                [{
+                    field: 'stuId',
+                    title: '学号',
+                    align: 'center',
+                    width: "17%"
+                }, {
+                    field: 'stuName',
+                    title: '姓名',
+                    align: 'center',
+                    width: "10%"
+                }, {
+                    field: 'lqzyId',
+                    title: '录取学院编号',
+                    align: 'center',
+                    width: "15%"
+                }, {
+                    field: 'lqzyName',
+                    title: '录取学院名称',
+                    width: "18%",
+                    align: "auto"
+                }, {
+                    field: 'deptId',
+                    title: '所在学院/部门编号',
+                    align: 'center',
+                    width: "12%"
+                }, {
+                    field: 'deptName',
+                    title: '所在学院/部门名称',
+                    width: "18%",
+                    align: 'center',
+                }, {
+                    field: 'dsName',
+                    title: '导师姓名',
+                    width: "10%",
+                    align: 'center',
+                }]
+            ],
+            toolbar: '#addZGtt',
+            onLoadError: function(XMLHttpRequest, textStatus, errorThrown) {
+                var tips = JSON.parse(XMLHttpRequest.responseText);
+                $.messager.alert('Warning', tips.message);
+            }
+        });
+        $('#cc').combobox({
+            url: url_queryDept,
+            valueField: 'deptId',
+            textField: 'deptName',
+            method: 'post',
+            multiple: true,
+            loader: cloader,
+            panelHeight: 200,
+            onChange: function(n, o) {
+                //用于处理全选
+                var len = n.length;
+                var last = n[len - 1];
+                var depts = $('#cc').combobox('getData');
+                var dept_arr = [];
+                $.each(depts, function(i, val) {
+                    dept_arr.push(val.deptId)
+                })
+                if (len < depts.length) {
+                    var val = $('#cc').combobox('getValues');
+                    if (val[0] == '') {
+                        $('#cc').combobox('setValues', val.slice(1));
+                    } else {
+                        /*第一个不等于all*/
+                        if (len == depts.length - 1) {
+                            console.log('else');
+                            val.push('')
+                            $('#cc').combobox('setValues', val);
+                        }
+                    }
+                }
+                if (last == '') {
+                    /*全选*/
+                    console.log('last=');
+                    if (len < depts.length) {
+                        $('#cc').combobox('setValues', dept_arr);
+                        selectAll = true;
+                    }
+                }
+            },
+        });
+        $('#stu_cc').combobox({
+            url: url_queryDept,
+            valueField: 'deptId',
+            textField: 'deptName',
+            method: 'post',
+            multiple: false,
+            loader: cloader,
+            panelHeight: 200,
+        })
+    });
+    </script>
+</head>
+
+<body>
+    <!-- <h2>助管信息管理</h2> -->
+    <!-- <p></p> -->
+    <div id="toolbar">
+        <div id="ts" style="padding:3px">
+            <span>学号:</span>
+            <input id="stuId" style="line-height:26px;border:1px solid #ccc">
+            <span>姓名:</span>
+            <input id="name" style="line-height:26px;border:1px solid #ccc">
+            <span>银行名称:</span>
+            <input id="bankName" style="line-height:26px;border:1px solid #ccc">
+            <span>部门名称:</span>
+            <input id='cc' name='deptName' value="">
+            <span>岗位类型:</span>
+            <select id="officeType" value="1" class="easyui-combobox" name="officeType" style="width:100px;" panelHeight="auto">
+                <option value="">全部</option>
+                <option value="0">行政事务</option>
+                <option value="1">学生事务</option>
+                <option value="2">研究性工作</option>
+            </select>
+            <span>是否需要做问卷:</span>
+            <select id="statusNeedCompleteQues" value="1" class="easyui-combobox" name="statusNeedCompleteQues" style="width:100px;" panelHeight="auto">
+                <option value="">全部</option>
+                <option value="0">不需要</option>
+                <option value="1">需要</option>
+            </select>
+            <span>是否已做问卷:</span>
+            <select id="complete" value="1" class="easyui-combobox" name="complete" style="width:100px;" panelHeight="auto">
+                <option value="">全部</option>
+                <option value="0">未做</option>
+                <option value="1">已做</option>
+            </select>
+            <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()">查询</a>
+            <!-- <a href="#" class="easyui-linkbutton" plain="true" >Search</a> -->
+        </div>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newZG()">添加</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editUser()">编辑</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="outJob()">转离职</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyUser()">删除</a>
+        <label class="lblname" id="authenTypeL">需要填写调查问卷：</label>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" plain="true" onclick="toggleSuvey('open')">需要</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-no" plain="true" onclick="toggleSuvey('close')">不需要</a>
+        <!-- 更新于20160613 -->
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="clearSuvey()">问卷模块初始化</a>
+        <div>
+            <a id="downMB" href='' class="easyui-linkbutton" iconCls="icon-remove" plain="true">点击下载上传文件的模板</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="addZGEx()">添加助管信息(通过文件)</a>
+        </div>
+    </div>
+    <!-- 用户信息表格 -->
+    <table id="tt"></table>
+    <!-- 编辑助管对话框 -->
+    <div id="dlg" class="easyui-dialog" style="width:500px" closed="true" buttons="#dlg-buttons" data-options="draggable:false,modal:true">
+        <form id="fm" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">助管信息</div>
+            <div style="margin-bottom:10px">
+                <input id="add_stuId" name="stuId" class="easyui-textbox" required="true" label="学号:" style="width:100%" disabled="true">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="add_name" name="name" class="easyui-textbox" required="true" label="姓名:" style="width:100%" disabled="true">
+            </div>
+            <div style="margin-bottom:10px">
+                <span class="dlg-span">
+                 部门:
+                </span>
+                <select class="dlg-select" id="add_deptId" class="" name="deptId">
+                </select>
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="add_officeName" name="officeName" class="easyui-textbox easyui-validatebox" label="科室名称" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <span class="dlg-span">
+                 岗位类型:
+            </span>
+                <select class="dlg-select" id="add_typeName" name="type">
+                    <option value="0">行政事务</option>
+                    <option value="1">学生事务</option>
+                    <option value="2">研究性工作</option>
+                </select>
+            </div>
+            <div style="margin-bottom:10px">
+                <span class="dlg-span">
+                 银行名称:
+            </span>
+                <select class="dlg-select" id="add_bankName" class="" name="bankName">
+                    <option value="建设银行">建设银行</option>
+                </select>
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="add_bankNo" name="bankNo" class="easyui-textbox easyui-validatebox" data-options="validType:'BankNo'" label="银行卡号" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="add_email" name="email" class="easyui-textbox easyui-validatebox" data-options="validType:'email'" label="邮箱" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="add_telephone" name="telephone" class="easyui-textbox easyui-validatebox" data-options="validType:'mobile'" label="电话号码" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="add_jobTime" name="jobTime" class="easyui-textbox easyui-validatebox" data-options="validType:'YYYYMM_YYYYMM'" label="聘期" style="width:100%">
+            </div>
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveUser()" style="width:90px">保存</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">取消</a>
+    </div>
+    <!-- 添加助管对话框（文件上传） -->
+    <div id="addZG" class="easyui-dialog" style="width:500px" closed="true" buttons="#dlg-buttons" data-options="draggable:false,modal:true">
+        <form id="fmEx" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">添加助管信息</div>
+            <div style="margin-bottom:10px">
+                <input name="uploadExcel" id="myfile" type="file" required="true" label="请选择文件:" style="width:100%">
+            </div>
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="uploadExcel()" style="width:90px">保存</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#addZG').dialog('close')" style="width:90px">取消</a>
+    </div>
+    <!-- 添加助管对话框（普通上传） -->
+    <div id="addZGdlg" class="easyui-dialog" style="width:88%" closed="true" buttons="#dlg-buttons" data-options="draggable:false,modal:true">
+        <div id="addZGtt">
+            <div id="addZGnor" style="padding:3px">
+                <span>学号:</span>
+                <input id="stu_stuId" style="line-height:26px;border:1px solid #ccc">
+                <span>姓名:</span>
+                <input id="stu_name" style="line-height:26px;border:1px solid #ccc">
+                <span>银行:</span>
+                <input id="stu_bankName" style="line-height:26px;border:1px solid #ccc">
+                <span>部门编号:</span>
+                <input id='stu_cc' class="easyui-combobox" name='stu_deptId' value="" style="line-height:26px;border:1px solid #ccc">
+                <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doStuSearch()">查询</a>
+            </div>
+        </div>
+        <!-- 助管信息表格 -->
+        <table id="addZGtable"></table>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveZG()" style="width:90px">添加</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#addZGdlg').dialog('close')" style="width:90px">取消</a>
+    </div>
+</body>
+
+</html>

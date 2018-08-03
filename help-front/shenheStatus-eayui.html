@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Row Editing in DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/demo.css">
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="./js/common/common.js"></script>
+    <script type="text/javascript" src="./js/common/url.js"></script>
+    <script type="text/javascript" src="./js/common/loader.js"></script>
+    <script type="text/javascript" src='./js/common/month.js'></script>
+    <script type="text/javascript ">
+    var url;
+
+    function doSearch() {
+        // var deptId=
+        var val = $('#cc').combobox('getValues');
+        if (val[0] == '') {
+            val = val.slice(1)
+        }
+        var deptIds = val.join(',')
+        var v = $('#helpDate').datebox('getValue');
+
+        $('#tt').datagrid('load', {
+            statusCode: $('#statusCode').combobox('getValue'),
+            type: $('#type').combobox('getValue'),
+            deptId: deptIds, //deptName
+            helpDate: v,
+            admin: 1,
+            officeType: $('#officeType').combobox('getValue'),
+            studentName: $('#studentName').val(),
+            studentId: $('#studentId').val(),
+            officeName: $('#officeName').val()
+        });
+    }
+
+    function getExcelUrl(test) {
+        console.log(test);
+        var val = $('#cc').combobox('getValues');
+        var deptIds = val.join(',')
+
+        var statusCode = $('#statusCode').combobox('getValue'),
+            type = $('#type').combobox('getValue'),
+            helpDate = $('#helpDate').datebox('getValue');
+
+        // var url = baseUrl + 'jasper/zgExceldownload.do?helpDate=' + helpDate + "&statusCode=" + statusCode + "&type=" + type + "&deptId=" + deptIds;
+        if (helpDate == undefined) {
+            helpDate = ""
+        }
+        if (statusCode == undefined) {
+            statusCode = ""
+        }
+        if (test === 'agree') {
+            console.log("下载");
+
+            var url = baseUrl + 'xls/zg_xls_download_manager_merge.do?helpDate='+ helpDate + "&statusCode=" + statusCode + "&type=" + type + "&deptId=" + deptIds;
+            $('#url2').attr('href', url)
+
+        } else {
+            var url = baseUrl + 'xls/zg_xls_download_manager.do?helpDate=' + helpDate + "&statusCode=" + statusCode + "&type=" + type + "&deptId=" + deptIds;
+            $('#url').attr('href', url)
+
+
+        }
+        // var url = baseUrl + 'xls/zg_xls_download_manager.do?helpDate=' + helpDate + "&statusCode=" + statusCode + "&type=" + type + "&deptId=" + deptIds;
+        // var url = 'http://115.29.136.190:8080/help/xls/zg_xls_download_manager.do?helpDate=' + helpDate + "&statusCode=" + statusCode + "&type=" + type + "&deptId=" + deptIds;
+        // $('#url').attr('href', url)
+    }
+
+    $(function() {
+        $('#tt').datagrid({
+            title: '审核数据导出',
+            iconCls: 'icon-edit',
+            width: "100%",
+            height: "auto",
+            rownumbers: true,
+            fit: true,
+            singleSelect: true,
+            idField: 'id',
+            url: buzhu_url.queryBuZhu,
+            pagination: true,
+            pageSize: 30,
+            pageList: [5, 10, 15, 20, 25, 30, 100, 200],
+            method: 'post',
+            queryParams: {
+                statusCode: 2,
+                // type:0,
+                admin: 1,
+                helpDate: ''
+            },
+            columns: [
+                [{
+                    field: 'stuId',
+                    title: '学号',
+                    align: 'center',
+                    width: "9%"
+                }, {
+                    field: 'studentName',
+                    title: '姓名',
+                    align: 'center',
+                    width: "5%"
+                }, {
+                    field: 'deptName',
+                    title: '设岗学院/部门名称',
+                    width: "9%",
+                    align: 'center',
+                }, {
+                    field: 'officeName',
+                    title: '岗位科室',
+                    width: "5%",
+                    align: 'center',
+                }, {
+                    field: 'officeTypeName',
+                    title: '岗位类型',
+                    width: "5%",
+                    align: 'center',
+                }, {
+                    field: 'bankName',
+                    title: '银行',
+                    width: "5%",
+                    align: 'center',
+                }, {
+                    field: 'bankNo',
+                    title: '银行卡号',
+                    width: "10%",
+                    align: 'center',
+                }, {
+                    field: 'helpDate',
+                    title: '考核年月',
+                    align: 'center',
+                    width: "5%"
+                }, {
+                    field: 'money',
+                    title: '金额',
+                    align: 'center',
+                    width: "3%"
+                }, {
+                    field: 'remark',
+                    title: '备注',
+                    align: 'center',
+                    width: "5%"
+                }, {
+                    field: 'createTime',
+                    title: '保存时间',
+                    align: 'center',
+                    width: "10%",
+                    formatter: function(val, rec) {
+                        return getSmpFormatDateByLong(val, true)
+
+                    }
+                }, {
+                    field: 'modifyTime',
+                    title: '最后修改时间',
+                    align: 'center',
+                    width: "10%",
+                    formatter: function(val, rec) {
+                        return getSmpFormatDateByLong(val, true)
+
+                    }
+                }, {
+                    field: 'submitTime',
+                    title: '提交时间',
+                    align: 'center',
+                    width: "10%",
+                    formatter: function(val, rec) {
+                        return getSmpFormatDateByLong(val, true)
+
+                    }
+                }, {
+                    field: 'statusCodeName',
+                    title: '状态',
+                    width: "10%",
+                    align: 'center',
+                }]
+            ],
+            loadFilter: function(data) {
+                console.log('loadFilter:')
+                console.log(data);
+                var value = {
+                    total: data.total,
+                    rows: []
+                };
+                for (var i = 0; i < data.rows.length; i++) {
+                    // var o = {};
+                    if (data.rows[i].statusCode != 0) {
+                        value.rows.push(data.rows[i]);
+                    } else {
+                        value.total--;
+                    }
+                }
+                console.log(value);
+                return value;
+            },
+            toolbar: '#toolbar',
+            onLoadError: function(XMLHttpRequest, textStatus, errorThrown) {
+                var tips = JSON.parse(XMLHttpRequest.responseText);
+                $.messager.alert('Warning', tips.message);
+            }
+        });
+        var selectAll = false;
+        $('#cc').combobox({
+            url: url_queryDept,
+            valueField: 'deptId',
+            textField: 'deptName',
+            method: 'post',
+            multiple: true,
+            loader: cloader,
+            panelHeight: 200,
+            onChange: function(n, o) {
+                console.log(selectAll);
+                console.log(n);
+                console.log(o);
+
+
+                var len = n.length;
+                console.log(len);
+
+                var last = n[len - 1];
+                var depts = $('#cc').combobox('getData');
+                var dept_arr = [];
+                console.log(depts.length);
+                $.each(depts, function(i, val) {
+                        dept_arr.push(val.deptId)
+                    })
+                    // dept_arr = dept_arr.slice(1)
+                if (len < depts.length) {
+                    var val = $('#cc').combobox('getValues');
+                    if (val[0] == '') {
+                        $('#cc').combobox('setValues', val.slice(1));
+                    } else {
+                        /*第一个不等于all*/
+                        if (len == depts.length - 1) {
+                            console.log('else');
+                            val.push('')
+                            $('#cc').combobox('setValues', val);
+                        }
+                    }
+                }
+                if (last == '') {
+                    /*全选*/
+                    console.log('last=');
+                    if (len < depts.length) {
+                        $('#cc').combobox('setValues', dept_arr);
+                        selectAll = true;
+                    }
+                }
+            },
+        })
+        $('#statusCode').combobox('setValue', 2)
+            // $('#type').combobox('setValue',0)
+
+
+    });
+    </script>
+</head>
+
+<body>
+    <!-- <h2>审核信息查看</h2> -->
+    <!-- <p></p> -->
+    <div id="toolbar">
+        <div id="ts" style="padding:3px">
+            <span>审核状态:</span>
+            <select id="statusCode" value="" class="easyui-combobox" name="statusCode" style="width:100px;" panelHeight="auto">
+                <option value="">全部</option>
+                <option value="1">已提交待审核</option>
+                <option value="2">审核通过</option>
+                <option value="3">审核未通过</option>
+                <option value="4">驳回状态</option>
+            </select>
+            <span>补助类型:</span>
+            <select id="type" value="" class="easyui-combobox" name="type" panelHeight="auto" style="width:100px;">
+                <option value="">全部</option>
+                <option value="0">正常发放</option>
+                <option value="1">历史补助</option>
+            </select>
+            <span>部门名称:</span>
+            <input id='cc' name='deptName' value="">
+            <span>考核年月:</span>
+            <input id="helpDate" type="text" class="easyui-datebox" data-options="formatter:myFormatter,parser:myParser">
+            <!-- <input name='helpDate' value="" style="line-height:26px;border:1px solid #ccc"> -->
+            <!-- <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch(this)">查询</a> -->
+            <!-- <a href="#" class="easyui-linkbutton" plain="true" >Search</a> -->
+        </div>
+        <div id="ts2" style="padding:3px">
+            <span>岗位类型:</span>
+            <select id="officeType" value="1" class="easyui-combobox" name="officeType" style="width:100px;" panelHeight="auto">
+                <option value="">全部</option>
+                <option value="0">行政事务</option>
+                <option value="1">学生事务</option>
+                <option value="2">研究性工作</option>
+            </select>
+            <span>岗位科室:</span>
+            <input id='officeName' name='officeName' value="">
+            <span>学生姓名:</span>
+            <input id='studentName' name='studentName' value="">
+            <span>学号:</span>
+            <input id='studentId' name='studentId' value="">
+            <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()">查询</a>
+        </div>
+        <a id="url" href="" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="getExcelUrl()"> 下载报表</a>
+        <a id="url2" href="" class="easyui-linkbutton" iconCls="icon-ok" plain="true" onclick="getExcelUrl('agree')"> 审核通过数据合并后导出</a>
+    </div>
+    <table id="tt"></table>
+</body>
+
+</html>

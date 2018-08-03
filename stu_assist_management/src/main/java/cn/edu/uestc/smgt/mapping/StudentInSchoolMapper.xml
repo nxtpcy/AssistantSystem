@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.edu.uestc.smgt.dao.StudentInSchoolMapper">
+	<resultMap id="BaseResultMap" type="cn.edu.uestc.smgt.pojo.StudentInSchool">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="stu_id" property="stuId" jdbcType="VARCHAR" />
+		<result column="stu_name" property="stuName" jdbcType="VARCHAR" />
+		<result column="gender" property="gender" jdbcType="VARCHAR" />
+		<result column="dept_id" property="deptId" jdbcType="VARCHAR" />
+		<result column="dept_name" property="deptName" jdbcType="VARCHAR" />
+		<result column="lqzy_id" property="lqzyId" jdbcType="VARCHAR" />
+		<result column="lqzy_name" property="lqzyName" jdbcType="VARCHAR" />
+		<result column="lqlb" property="lqlb" jdbcType="VARCHAR" />
+		<result column="ds_id" property="dsId" jdbcType="VARCHAR" />
+		<result column="ds_name" property="dsName" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, stu_id, stu_name, gender, dept_id, dept_name, lqzy_id,
+		lqzy_name,
+		lqlb, ds_id,
+		ds_name, create_time, modify_time
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from help_student_inschool
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from
+		help_student_inschool
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="cn.edu.uestc.smgt.pojo.StudentInSchool">
+		insert into
+		help_student_inschool (id, stu_id, stu_name,
+		gender, dept_id,
+		dept_name,
+		lqzy_id, lqzy_name, lqlb,
+		ds_id, ds_name, create_time,
+		modify_time)
+		values (#{id,jdbcType=INTEGER}, #{stuId,jdbcType=VARCHAR},
+		#{stuName,jdbcType=VARCHAR},
+		#{gender,jdbcType=VARCHAR},
+		#{deptId,jdbcType=VARCHAR}, #{deptName,jdbcType=VARCHAR},
+		#{lqzyId,jdbcType=VARCHAR}, #{lqzyName,jdbcType=VARCHAR},
+		#{lqlb,jdbcType=VARCHAR},
+		#{dsId,jdbcType=VARCHAR},
+		#{dsName,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
+		#{modifyTime,jdbcType=TIMESTAMP})
+	</insert>
+	<insert id="insertSelective" parameterType="cn.edu.uestc.smgt.pojo.StudentInSchool">
+		insert into help_student_inschool
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="stuId != null">
+				stu_id,
+			</if>
+			<if test="stuName != null">
+				stu_name,
+			</if>
+			<if test="gender != null">
+				gender,
+			</if>
+			<if test="deptId != null">
+				dept_id,
+			</if>
+			<if test="deptName != null">
+				dept_name,
+			</if>
+			<if test="lqzyId != null">
+				lqzy_id,
+			</if>
+			<if test="lqzyName != null">
+				lqzy_name,
+			</if>
+			<if test="lqlb != null">
+				lqlb,
+			</if>
+			<if test="dsId != null">
+				ds_id,
+			</if>
+			<if test="dsName != null">
+				ds_name,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="modifyTime != null">
+				modify_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="stuId != null">
+				#{stuId,jdbcType=VARCHAR},
+			</if>
+			<if test="stuName != null">
+				#{stuName,jdbcType=VARCHAR},
+			</if>
+			<if test="gender != null">
+				#{gender,jdbcType=VARCHAR},
+			</if>
+			<if test="deptId != null">
+				#{deptId,jdbcType=VARCHAR},
+			</if>
+			<if test="deptName != null">
+				#{deptName,jdbcType=VARCHAR},
+			</if>
+			<if test="lqzyId != null">
+				#{lqzyId,jdbcType=VARCHAR},
+			</if>
+			<if test="lqzyName != null">
+				#{lqzyName,jdbcType=VARCHAR},
+			</if>
+			<if test="lqlb != null">
+				#{lqlb,jdbcType=VARCHAR},
+			</if>
+			<if test="dsId != null">
+				#{dsId,jdbcType=VARCHAR},
+			</if>
+			<if test="dsName != null">
+				#{dsName,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="modifyTime != null">
+				#{modifyTime,jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="cn.edu.uestc.smgt.pojo.StudentInSchool">
+		update help_student_inschool
+		<set>
+			<if test="stuId != null">
+				stu_id = #{stuId,jdbcType=VARCHAR},
+			</if>
+			<if test="stuName != null">
+				stu_name = #{stuName,jdbcType=VARCHAR},
+			</if>
+			<if test="gender != null">
+				gender = #{gender,jdbcType=VARCHAR},
+			</if>
+			<if test="deptId != null">
+				dept_id = #{deptId,jdbcType=VARCHAR},
+			</if>
+			<if test="deptName != null">
+				dept_name = #{deptName,jdbcType=VARCHAR},
+			</if>
+			<if test="lqzyId != null">
+				lqzy_id = #{lqzyId,jdbcType=VARCHAR},
+			</if>
+			<if test="lqzyName != null">
+				lqzy_name = #{lqzyName,jdbcType=VARCHAR},
+			</if>
+			<if test="lqlb != null">
+				lqlb = #{lqlb,jdbcType=VARCHAR},
+			</if>
+			<if test="dsId != null">
+				ds_id = #{dsId,jdbcType=VARCHAR},
+			</if>
+			<if test="dsName != null">
+				ds_name = #{dsName,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="modifyTime != null">
+				modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="cn.edu.uestc.smgt.pojo.StudentInSchool">
+		update
+		help_student_inschool
+		set stu_id = #{stuId,jdbcType=VARCHAR},
+		stu_name =
+		#{stuName,jdbcType=VARCHAR},
+		gender = #{gender,jdbcType=VARCHAR},
+		dept_id = #{deptId,jdbcType=VARCHAR},
+		dept_name =
+		#{deptName,jdbcType=VARCHAR},
+		lqzy_id = #{lqzyId,jdbcType=VARCHAR},
+		lqzy_name = #{lqzyName,jdbcType=VARCHAR},
+		lqlb =
+		#{lqlb,jdbcType=VARCHAR},
+		ds_id = #{dsId,jdbcType=VARCHAR},
+		ds_name =
+		#{dsName,jdbcType=VARCHAR},
+		create_time =
+		#{createTime,jdbcType=TIMESTAMP},
+		modify_time =
+		#{modifyTime,jdbcType=TIMESTAMP}
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+
+	<!-- 自定义sql开始 -->
+
+	<!-- 获取对应条件下的记录总条数 -->
+	<select id="size" resultType="Long" parameterType="Map">
+		select count(*) from help_student_inschool
+		<where>
+			<if test="stuId != null and stuId != ''">
+				AND stu_id like
+				CONCAT(CONCAT('%',
+				#{stuId,jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="stuName != null and stuName != ''">
+				AND stu_name like
+				CONCAT(CONCAT('%',
+				#{stuName,jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="deptId != null and deptId != ''">
+				AND dept_id=#{deptId,jdbcType=VARCHAR}
+			</if>
+			<if test="dsId != null and dsId != ''">
+				AND ds_id like
+				CONCAT(CONCAT('%',
+				#{dsId,jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="dsName != null and dsName != ''">
+				AND ds_name like
+				CONCAT(CONCAT('%',
+				#{dsName,jdbcType=VARCHAR}),'%')
+			</if>
+		</where>
+	</select>
+	<!-- 根据条件分页查询在校学生信息 stuId，stuName，deptId，dsId，dsName -->
+	<select id="selectByPageAndSelections" parameterType="cn.edu.uestc.smgt.common.QueryBase"
+		resultMap="BaseResultMap">
+		select * from help_student_inschool
+		<where>
+			<if test="parameters.stuId != null and parameters.stuId != ''">
+				AND stu_id like
+				CONCAT(CONCAT('%',
+				#{parameters.stuId,jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="parameters.stuName != null and parameters.stuName != ''">
+				AND stu_name like
+				CONCAT(CONCAT('%',
+				#{parameters.stuName,jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="parameters.deptId != null and parameters.deptId != ''">
+				AND dept_id=#{parameters.deptId,jdbcType=VARCHAR}
+			</if>
+			<if test="parameters.dsId != null and parameters.dsId != ''">
+				AND ds_id like
+				CONCAT(CONCAT('%',
+				#{parameters.dsId,jdbcType=VARCHAR}),'%')
+			</if>
+			<if test="parameters.dsName != null and parameters.dsName != ''">
+				AND ds_name like
+				CONCAT(CONCAT('%',
+				#{parameters.dsName,jdbcType=VARCHAR}),'%')
+			</if>
+		</where>
+		order by stu_id 
+		limit #{firstRow},#{pageSize}
+	</select>
+
+	<select id="selectByStuId" parameterType="String" resultMap="BaseResultMap">
+		select * from help_student_inschool where stu_id = #{stuId}
+	</select>
+
+</mapper>

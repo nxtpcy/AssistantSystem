@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Row Editing in DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="../jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="../jquery-easyui/demo.css">
+    <link rel="stylesheet" type="text/css" href="../css/common.css">
+    <script type="text/javascript" src="../jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="../jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="../js/common/common.js"></script>
+    <script type="text/javascript" src="../js/common/url.js"></script>
+    <script type="text/javascript" src="../js/common/loader.js"></script>
+    <script type="text/javascript" src='../js/common/month.js'></script>
+    <script type="text/javascript" src='../js/modules/student.js'></script>
+    <script type="text/javascript ">
+        var loadFile;
+
+        function doSearch() {
+            // var deptId=
+            var val = $('#cc').combobox('getValues');
+            if (val[0] == '') {
+                val = val.slice(1)
+            }
+            var deptIds = val.join(',');
+            $('#tt').datagrid('load', {
+                adminStatus: $('#status').combobox('getValue'),
+                deptId: deptIds, //deptName
+                officeType: $('#officeType').combobox('getValue'),
+                stuName: $('#studentName').val(),
+                stuId: $('#studentId').val(),
+                officeName: $('#officeName').val()
+            });
+            $('#tt').datagrid('unselectAll');
+        }
+
+        /*录用结果报表下载*/
+        function exportResult(e) {
+            console.log(e);
+            var nhref = Student.url.exportFile + '?adminStatus=2&deptStatus=4&status=7';
+            $(e).attr('href', nhref);
+        }
+
+        function agree() {
+            var rows = $('#tt').datagrid('getSelections');
+            var res = Student.getStatus([0], rows, 0);
+            if (!res) {
+                $.messager.alert('Warning', '请选择一条数据');
+                return false;
+            }
+            if (res.flag) {
+                $.ajax({
+                    type: "POST",
+                    // url: Student.url.adminAgree + '?' + "stuApplicationList=" + ids,
+                    url: res.url,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    // data: JSON.stringify(query),
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    crossDomain: true,
+                    success: function (data) {
+                        if (data.status == 1) {
+                            $.messager.alert('Warning', data.message);
+                            $('#tt').datagrid('reload');
+                            $('#tt').datagrid('unselectAll');
+                        } else {
+                            $.messager.alert('Warning', data.message);
+                        }
+
+                    }
+                })
+            } else {
+                $.messager.alert('Warning', res.tips);
+
+            }
+
+        }
+
+        function disagree() {
+            var rows = $('#tt').datagrid('getSelections');
+            var res = Student.getStatus([0], rows, 1);
+            if (!res) {
+                $.messager.alert('Warning', '请选择一条数据');
+                return false;
+            }
+            if (res.flag) {
+                $.ajax({
+                    type: "POST",
+                    // url: Student.url.adminDeny + '?' + "stuApplicationList=" + ids,
+                    url: res.url,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    // data: JSON.stringify(query),
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    crossDomain: true,
+                    success: function (data) {
+                        if (data.status == 1) {
+                            $.messager.alert('Warning', data.message);
+                            $('#tt').datagrid('reload');
+                            $('#tt').datagrid('unselectAll');
+                        } else {
+                            $.messager.alert('Warning', data.message);
+
+                        }
+                    }
+                })
+            } else {
+                $.messager.alert('Warning', res.tips);
+            }
+
+        }
+
+        function final_agree() {
+            var rows = $('#tt').datagrid('getSelections');
+            var res = Student.getStatus([2, 4, 6], rows, 4);
+            if (!res) {
+                $.messager.alert('Warning', '请选择一条数据');
+                return false;
+            }
+            if (res.flag) {
+                $.ajax({
+                    type: "POST",
+                    // url: Student.url.adminAgree + '?' + "stuApplicationList=" + ids,
+                    url: res.url,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    // data: JSON.stringify(query),
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    crossDomain: true,
+                    success: function (data) {
+                        if (data.status == 1) {
+                            $.messager.alert('Warning', data.message);
+                            $('#tt').datagrid('reload');
+                            $('#tt').datagrid('unselectAll');
+                        } else {
+                            $.messager.alert('Warning', data.message);
+                        }
+                    }
+                });
+            } else {
+                $.messager.alert('Warning', res.tips);
+            }
+        }
+
+        function final_disagree() {
+            var rows = $('#tt').datagrid('getSelections');
+            var res = Student.getStatus([2, 4, 6], rows, 5);
+            if (!res) {
+                $.messager.alert('Warning', '请选择一条数据');
+                return false;
+            }
+            //console.log(res.flag)
+            if (res.flag) {
+                $.ajax({
+                    type: "POST",
+                    // url: Student.url.adminAgree + '?' + "stuApplicationList=" + ids,
+                    url: res.url,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    // data: JSON.stringify(query),
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    crossDomain: true,
+                    success: function (data) {
+                        if (data.status == 1) {
+                            $.messager.alert('Warning', data.message);
+                            $('#tt').datagrid('reload');
+                            $('#tt').datagrid('unselectAll');
+                        } else {
+                            $.messager.alert('Warning', data.message);
+                        }
+
+                    }
+                })
+            } else {
+                $.messager.alert('Warning', res.tips);
+            }
+
+        }
+
+        /** function reedit() {
+            var rows = $('#tt').datagrid('getSelections');
+            var ids = '';
+            var flag = true;
+            if (rows.length === 0) {
+                $.messager.alert('Warning', '请选择一条数据');
+                return false;
+            }
+            $.each(rows, function (i, val) {
+                ids = val.id + ',' + ids
+                if (val.statusCode != 1) {
+                    flag = false
+                }
+            });
+
+            if (flag) {
+                var newUrl = buzhu_url.reedit + '?' + 'buzhuList=' + ids;
+                $.ajax({
+                    type: "POST",
+                    url: newUrl,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    crossDomain: true,
+                    success: function (data) {
+                        if (data.status == 1) {
+                            $.messager.alert('Warning', data.message);
+                            $('#tt').datagrid('reload');
+                            $('#tt').datagrid('unselectAll');
+
+                        } else {
+                            $.messager.alert('Warning', data.message);
+                        }
+                    }
+                })
+            } else {
+                $.messager.alert('Warning', '请确认是否为待审核状态');
+            }
+
+        }
+
+         /*简历查看
+         function loadFile(div, id) {
+         $(div).attr('href', baseUrl + 'stu/downloadFile.do?appId=' + id);
+         $('#downloadDlg').dialog('close');
+         }*/
+
+        $(function () {
+            $('#tt').datagrid({
+                title: '助管招聘审核',
+                iconCls: 'icon-edit',
+                width: "100%",
+                height: "auto",
+                rownumbers: true,
+                fit: true,
+                singleSelect: false,
+                idField: 'id',
+                url: Student.url.query,
+                pagination: true,
+                pageSize: 30,
+                pageList: [5, 10, 15, 20, 25, 30, 100, 200],
+                method: 'post',
+                // queryParams: {
+                //     adminStatus: 0 
+                // },
+                columns: [
+                    [{
+                        field: 'id',
+                        checkbox: true
+                    }, {
+                        field: 'stuId',
+                        title: '学号',
+                        align: 'center',
+                        width: "8%"
+                    }, {
+                        field: 'stuName',
+                        title: '姓名',
+                        align: 'center',
+                        width: "5%"
+                    }, {
+                        field: 'deptNameDTO',
+                        title: '设岗学院/部门名称',
+                        width: "9%",
+                        align: 'center',
+                    }, {
+                        field: 'officeName',
+                        title: '岗位科室',
+                        width: "5%",
+                        align: 'center',
+                    }, {
+                        field: 'typeNameDTO',
+                        title: '岗位类型',
+                        width: "5%",
+                        align: 'center',
+                    }, {
+                        field: 'applyReason',
+                        title: '岗位理由',
+                        width: "13%",
+                        align: 'center',
+                    }, {
+                        field: 'applyTime',
+                        title: '申请时间',
+                        width: "13%",
+                        align: 'center',
+                        formatter: function (val, rec) {
+                            return getSmpFormatDateByLong(val, true)
+                        }
+                    }, {
+                        field: 'adminStatusDesc',
+                        title: '资料审核状态',
+                        width: "10%",
+                        align: 'center',
+                    }, {
+                        field: 'deptStatusDesc',
+                        title: '学院/部门审核状态',
+                        width: "13%",
+                        align: 'center',
+                    }, {
+                        field: 'statusName',
+                        title: '终审状态',
+                        width: "10%",
+                        align: 'center',
+                    }, {
+                        field: 'operator',
+                        title: '简历查看',
+                        width: "5%",
+                        align: 'center',
+                        formatter: function (val, row, index) {
+                            //var result = Student.checkFile(row.id);
+                            //if (result.status == 1) {
+                            var dirPath = row.dirPath;
+                            //console.log(row.dirPath);
+                            return '<a href="#" onclick="openDownloadDlg(' + row.id + ')">查看</a>';
+                            //} else {
+                            //return '<p>未上传简历</p>'
+                            //}
+                        }
+                    }]
+                ],
+                loadFilter: function (data) {
+                    // console.log('loadFilter:')
+                    //console.log(data);
+                    var value = {
+                        total: data.total,
+                        rows: []
+                    };
+                    for (var i = 0; i < data.rows.length; i++) {
+                        // var o = {};
+                        if (data.rows[i].statusCode != 0) {
+                            value.rows.push(data.rows[i]);
+                        } else {
+                            value.total--;
+                        }
+                    }
+                    // console.log(value);
+                    return value;
+                },
+                toolbar: '#toolbar',
+                onLoadError: function (XMLHttpRequest, textStatus, errorThrown) {
+                    var tips = JSON.parse(XMLHttpRequest.responseText);
+                    $.messager.alert('Warning', tips.message);
+                },
+                rowStyler: function (index, row) {
+                    if (row.status == 3 || row.status == 5 || row.status == 8) {
+                        return 'background-color:#FF6A6A;color:black;';
+                    }
+                    if(row.status == 7){
+                        return 'background-color:#AFEEEE;color:black;';
+                    }
+                }
+            });
+
+            $('#cc').combobox({
+                url: url_queryDept,
+                valueField: 'deptId',
+                textField: 'deptName',
+                method: 'post',
+                multiple: false,
+                loader: cloader,
+                panelHeight: 200,
+                onChange: function (n, o) {
+                    var len = n.length;
+                    var last = n[len - 1];
+                    var depts = $('#cc').combobox('getData');
+                    var dept_arr = [];
+                    // console.log(depts.length);
+                    $.each(depts, function (i, val) {
+                        dept_arr.push(val.deptId)
+                    });
+                    // dept_arr = dept_arr.slice(1)
+                    if (len < depts.length) {
+                        var val = $('#cc').combobox('getValues');
+                        if (val[0] == '') {
+                            $('#cc').combobox('setValues', val.slice(1));
+                        } else {
+                            /*第一个不等于all*/
+                            if (len == depts.length - 1) {
+                                val.push('')
+                                $('#cc').combobox('setValues', val);
+                            }
+                        }
+                    }
+                    if (last == '') {
+                        /*全选*/
+                        if (len < depts.length) {
+                            $('#cc').combobox('setValues', dept_arr);
+                            selectAll = true;
+                        }
+                    }
+                },
+            })
+        });
+
+        /** 打开查看简历窗口 **/
+        function openDownloadDlg(id) {
+            $('#downloadDlg').dialog('open').dialog('center').dialog('setTitle', '简历查看');
+            var result = Student.checkFile(id);
+            //console.log(dirPath);
+            if (result.status == 1) {
+                var url = baseUrl + 'stu/downloadFile.do?appId=' + id;
+                $('#downWarn').html('点击确定下载简历，点击取消关闭窗口！');
+                $('#imgResume').attr('src', url);
+                loadFile = function () {
+                    //console.log('url是：', baseUrl + 'stu/downloadFile.do?appId=' + id);
+                    $('#download').attr('href', url);
+                    $('#downloadDlg').dialog('close');
+                };
+            } else {
+                $('#downWarn').html('用户没有上传简历！');
+                $('#imgResume').attr('src', '');
+                loadFile = function () {
+                    //console.log('url是：', baseUrl + 'stu/downloadFile.do?appId=' + id);
+                    //$('#download').attr('href', url);
+
+                    $('#download').attr('href', '');
+                    $('#downloadDlg').dialog('close');
+                };
+            }
+        }
+
+    </script>
+</head>
+
+<body>
+<!-- <h2>审核信息管理</h2> -->
+<!-- <p></p> -->
+<div id="toolbar">
+    <div id="ts" style="padding:3px">
+        <span>审核状态:</span>
+        <select id="status" value="" class="easyui-combobox" name="statusCode" style="width:100px;" panelHeight="auto">
+            <option value="">全部</option>
+            <option value="0">形式审查待审核</option>
+            <option value="1">学院/部门待审核</option>
+            <option value="2">形式审查审核通过</option>
+            <option value="3">形式审查审核不通过</option>
+            <option value="4">学院/部门审核通过</option>
+            <option value="5">学院/部门审核不通过</option>
+            <option value="6">研究生院最终待审核</option>
+            <option value="7">研究生院最终审核通过</option>
+            <option value="8">研究生院最终审核不通过</option>
+        </select>
+        <span>部门名称:</span>
+        <input id='cc' name='deptName' value="">
+        <span>岗位类型:</span>
+        <select id="officeType" value="1" class="easyui-combobox" name="officeType" style="width:100px;"
+                panelHeight="auto">
+            <option value="">全部</option>
+            <option value="0">行政事务</option>
+            <option value="1">学生事务</option>
+            <option value="2">研究性工作</option>
+        </select>
+        <span>岗位科室:</span>
+        <input id='officeName' name='officeName' value="">
+        <span>学生姓名:</span>
+        <input id='studentName' name='studentName' value="">
+        <span>学号:</span>
+        <input id='studentId' name='studentId' value="">
+        <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()">查询</a>
+    </div>
+
+    <div id="ts2" style="padding:3px"></div>
+
+    <div style="display: inline-block; margin-left: 4px; margin-right: 4px; background-color: #FFE4E1;">
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true"
+           onclick="agree()">同意已选（形式审查）</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true"
+           onclick="disagree()">拒绝已选（形式审查）</a>
+    </div>
+    <div style="display: inline-block; margin-left: 4px; margin-right: 4px; background-color: #4EEE94;">
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true"
+           onclick="final_agree()">同意已选（终审）</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true"
+           onclick="final_disagree()">拒绝已选（终审）</a>
+    </div>
+    <div style="display: inline-block; margin-left: 4px; background-color: #EEDD82;">
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" plain="true"
+           onclick="exportResult(this)">数据导出</a>
+    </div>
+
+</div>
+<!-- 用户信息表格 -->
+<table id="tt"></table>
+<!-- 编辑助管对话框 -->
+<div id="dlg" class="easyui-dialog" style="width:500px" closed="true" buttons="#dlg-buttons">
+    <form id="fm" method="post" novalidate style="margin:0;padding:20px 50px">
+        <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">助管信息</div>
+        <div style="margin-bottom:10px">
+            <input id="add_stuId" name="stuId" class="easyui-textbox" required="true" label="学号:" style="width:100%">
+        </div>
+        <div style="margin-bottom:10px">
+            <input id="add_name" name="name" class="easyui-textbox" required="true" label="姓名" style="width:100%">
+        </div>
+        <div style="margin-bottom:10px">
+            <input id="add_deptId" name="deptId" class="easyui-textbox" label="部门编号:" style="width:100%">
+        </div>
+        <div style="margin-bottom:10px">
+            <input id="add_bankName" name="bankName" class="easyui-textbox" label="银行" style="width:100%">
+        </div>
+        <div style="margin-bottom:10px">
+            <input id="add_bankNo" name="bankNo" class="easyui-textbox" label="银行卡号" style="width:100%">
+        </div>
+        <div style="margin-bottom:10px">
+            <input id="add_telephone" name="telephone" class="easyui-textbox" label="电话号码" style="width:100%">
+        </div>
+    </form>
+</div>
+<div id="dlg-buttons">
+    <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveUser()" style="width:90px">保存</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel"
+       onclick="javascript:$('#dlg').dialog('close')" style="width:90px">取消</a>
+</div>
+
+
+<!-- 编辑下载对话框 -->
+<div id="downloadDlg" class="easyui-dialog" style="width:700px;height: 700px;" closed="true"
+     buttons="#downloadDlg-buttons">
+    <img id="imgResume">
+    <p id="downWarn" style="text-align: center; font-size: 25px;">查看简历需要先下载，是否确定？</p>
+</div>
+<div id="downloadDlg-buttons">
+    <a id="download" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="loadFile()" style="width:90px">确定</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel"
+       onclick="javascript:$('#downloadDlg').dialog('close')" style="width:90px">取消</a>
+</div>
+</body>
+
+</html>

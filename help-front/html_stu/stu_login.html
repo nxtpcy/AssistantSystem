@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>助管管理系统——学生登录信息管理</title>
+    <link rel="stylesheet" type="text/css" href="../jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="../jquery-easyui/demo.css">
+    <link rel="stylesheet" type="text/css" href="../css/common.css">
+    <style>
+    #dlg span {
+        width: 27%;
+    }
+    
+    .dlg-span {
+        width: 27%;
+        display: inline-block;
+        height: 25px;
+        line-height: 25px;
+    }
+    
+    .dlg-select {
+        /*margin-left: 80px;*/
+        display: inline-block;
+        width: 70.79%;
+        height: 25px;
+        /*line-height: 25px;*/
+    }
+    </style>
+    <script type="text/javascript" src="../jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="../jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="../js/dist/md5.min.js"></script>
+    <script src="../js/dist/base64.js"></script>
+    <script type="text/javascript" src="../js/common/common.js"></script>
+    <script type="text/javascript" src="../js/common/url.js"></script>
+    <script type="text/javascript" src="../js/common/loader.js"></script>
+    <script type="text/javascript" src='../js/outlook2.js'></script>
+    <script type="text/javascript" src='../js/modules/completeInfo.js'></script>
+    <script type="text/javascript ">
+    var url;
+
+    function doSearch() {
+        var id=$("#stuId").val();
+        var val = $('#cc').combobox('getValue');
+        var name=$('#stuName').val();
+
+        var query={};
+        if(val){
+        	query.deptId=val;
+        }
+        if(name){
+        	query.stuName=name;
+        }
+        if(id){
+            query.stuId=id;
+        }
+       
+        $('#tt').datagrid('load',query);
+    }
+
+
+    function newUser() {
+        //插入下拉框
+        $('#dept').append('<option>bitem6</option>');
+        var depts = [];
+        var query = {
+            rows: 200,
+            page: 1
+        }
+        var newHtml = '';
+        $.ajax({
+            type: 'POST',
+            async: false,
+            url: baseUrl + 'base/dept/list.do',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(query),
+            dataType: 'json',
+            success: function(data) {
+                console.log(data);
+                $.each(data.result, function(i, val) {
+                    var temp = val.deptId + val.deptName;
+                    var option = '<option value=' + val.deptId + '>' + temp + '</option>';
+                    newHtml = newHtml + option;
+                })
+                $('#dept')[0].innerHTML = newHtml;
+                //下拉框生成完毕
+                $('#dlg').dialog('open').dialog('center').dialog('setTitle', '添加新用户');
+                url = baseUrl+'student/user/addUser.do';
+            },
+            error: function() {
+                error.apply(this, arguments);
+            }
+        });
+        console.log(depts);
+
+    }
+
+    function saveUser() {
+        var data = $("#fm").serializeObject();
+        // console.log
+        if ($("#fm").form('validate')) {
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(result) {
+                    if (result.status == 1) {
+                        $.messager.alert('Warning', result.message);
+                        $('#dlg').dialog('close'); // close the dialog
+                        $('#tt').datagrid('reload'); // reload the user data
+                    } else {
+                        $.messager.alert('Warning', result.message);
+                    }
+                }
+            })
+        } else {
+            // $.messager.alert('Warning', '请选择一条数据');
+            $.messager.alert('Warning', '请确认表格中输入是否合法');
+
+        };
+    }
+
+    function destroyUser() {
+        var row = $('#tt').datagrid('getSelected');
+        if (row) {
+            $.messager.confirm('确认', '你确定要删除该学生吗？', function(r) {
+                if (r) {
+                    $.ajax({
+                        type: "POST",
+                        url: baseUrl+'student/user/deleteUser.do?id='+row.id,
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        crossDomain: true,
+                        success: function(result) {
+                            if (result.status == 1) {
+                                $.messager.alert('Warning', result.message);
+                                $('#tt').datagrid('reload'); // reload the user data
+                            } else {
+                                $.messager.alert('Warning', result.errorMsg);
+                            }
+                        }
+                    })
+                }
+            });
+        } else {
+            $.messager.alert('Warning', '请选择一条数据');
+
+        }
+    }
+
+    // function refreshUser() {
+    //     var row = $('#tt').datagrid('getSelected');
+    //     console.log(row);
+    //     var psd = "111111";
+    //     // return false;
+    //     if (row) {
+    //         $.messager.confirm('确认', '你确定要重置该用户吗？', function(r) {
+    //             if (r) {
+    //                 var query = {
+    //                     "loginName": row.loginName,
+    //                     "firstPwd": btoa(md5(psd)),
+    //                     "secondPwd": btoa(md5(psd)),
+    //                 }
+    //                 $.ajax({
+    //                     type: "POST",
+    //                     url: baseUrl + 'usr/user/resetPwd.do',
+    //                     data: JSON.stringify(query),
+    //                     contentType: "application/json; charset=utf-8",
+    //                     dataType: 'json',
+    //                     success: function(result) {
+    //                         if (result.status == 1) {
+    //                             // alert(result.message);
+    //                             $.messager.alert('Warning', '密码修改成功，默认密码为111111');
+    //                         } else {
+    //                             msgShow('系统提示', result.message);
+    //                             $.messager.alert('Warning', result.message);
+    //                         }
+
+    //                     }
+    //                 });
+    //             }
+    //         });
+    //     } else {
+    //         $.messager.alert('Warning', '请选择一条数据');
+    //     }
+    // }
+    $(function() {
+        checkNeedComplete();
+        $('#tt').datagrid({
+            title: '学生登录信息管理',
+            iconCls: 'icon-edit',
+            width: "100%",
+            fit: true,
+            height: "auto",
+            rownumbers: true,
+            singleSelect: true,
+            idField: 'id',
+            url: baseUrl+'student/user/listUser.do',
+            pagination: true,
+            // pageSize: 10,
+            // pageList: [5, 10, 15, 20],
+            pageSize: 30,
+            pageList: [5, 10, 15, 20, 25, 30],
+            method: 'post',
+            columns: [
+                [{
+                    field: 'stuId',
+                    title: '学号',
+                    align: 'center',
+                    width: "20%"
+                }, 
+                {
+                    field: 'stuName',
+                    title: '姓名',
+                    width: "20%",
+                    align: 'center',
+                },
+
+                {
+                    field: 'deptId',
+                    title: '学院ID',
+                    align: 'center',
+                    width: "20%"
+                }, {
+                    field: 'deptName',
+                    title: '学院名称',
+                    width: "20%",
+                    align: 'center',
+                },
+                {
+                    field: 'role',
+                    title: '角色',
+                    width: "20%",
+                    align: 'center',
+                    formatter: function(val, rec) {
+                        console.log(val)
+                        if (val == 3) {
+                            return "普通研究生"
+                        } else if (val == 4) {
+                            return "助管"
+                        }
+
+                    }
+                },
+               
+
+                ]
+            ],
+            toolbar: '#toolbar',
+            onLoadError: function(XMLHttpRequest, textStatus, errorThrown) {
+                var tips = JSON.parse(XMLHttpRequest.responseText);
+                $.messager.alert('Warning', tips.message);
+            }
+        });
+        $('#cc').combobox({
+            url: baseUrl + 'base/dept/list.do',
+            valueField: 'deptId',
+            textField: 'deptName',
+            method: 'post',
+            multiple: false,
+            loader: cloader,
+            panelHeight: 200,
+        });
+        //初始化按钮
+        if(parseInt(localStorage.needComleteInfo)===1){
+            var sbuttonCheck=true
+        }
+        $('#sbutton').switchbutton({
+            checked: sbuttonCheck,
+            onChange: function(checked) {
+                if (checked == true) {
+                    updateNeedComplete(1)
+                    return;
+                }
+                if (checked == false) {
+                    updateNeedComplete(0)
+                   
+                }
+            }
+        })
+
+    });
+    </script>
+</head>
+
+<body>
+    <!-- <h2>用户管理系统</h2> -->
+    <!-- <p></p> -->
+    <div id="toolbar">
+        <div id="ts" style="padding:3px;">
+            <span>学号:</span>
+            <input id="stuId" style="height:20px;border:1px solid #ccc">
+            <span>姓名:</span>
+            <input id="stuName" style="height:20px;border:1px solid #ccc">
+            <span>学院名称:</span>
+            <input id='cc' name='deptName' value="" style="line-height:26px;">
+            <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()">查询</a>
+            <!-- <a href="#" class="easyui-linkbutton" plain="true" >Search</a> -->
+        </div>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newUser()">新用户</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyUser()">删除</a>
+        <!-- <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-undo" plain="true" onclick="refreshUser()">重置密码</a> -->
+        <label class="lblname" id="authenTypeL">要求用户信息完善：</label>
+        <input id="sbutton" style="width:70px;height:25px">
+        
+    </div>
+    <!-- 用户信息表格 -->
+    <table id="tt"></table>
+    <!-- 添加用户对话框 -->
+    <div id="dlg" class="easyui-dialog" style="width:500px" closed="true" buttons="#dlg-buttons" data-options="draggable:false,modal:true">
+        <form id="fm" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">添加学生登录信息</div>
+            <div style="margin-bottom:10px">
+                <input name="stuId" class="easyui-numberbox" required="true" label="学号:" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input name="pwd" class="easyui-textbox" required="true" label="密码:" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input name="stuName" class="easyui-textbox" required="true" label="姓名:" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <span class="dlg-span">
+                 学院
+            </span>
+                <select class="dlg-select" id="dept" class="" name="deptId">
+                </select>
+            </div>
+             <div style="margin-bottom:10px">
+                <span class="dlg-span">
+                 角色
+            </span>
+                <select class="dlg-select" id="role" class="" name="role">
+                  <option value="3">普通研究生</option>
+                  <option value="4">助管</option>
+                </select>
+            </div>
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveUser()" style="width:90px">保存</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">取消</a>
+    </div>
+</body>
+
+</html>

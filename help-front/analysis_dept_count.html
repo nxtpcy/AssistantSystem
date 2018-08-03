@@ -1,0 +1,190 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Row Editing in DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/demo.css">
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/easyui-lang-zh_CN.js"></script>
+	<script type="text/javascript" src="./js/common/common.js"></script>
+    <script src="./js/common/loader.js"></script>
+    <script src="./js/common/url.js"></script>
+    <style type="text/css">
+    #dlg span {
+        width: 400px;
+    }
+    
+    #dlg label {
+        width: 100px;
+    }
+    </style>
+    <script type="text/javascript ">
+    // var baseUrl = 'http://115.29.136.190:8080/help';
+    var url = '';
+
+    function doSearch() {
+        var val = $('#cc').combobox('getValue');
+
+        $('#tt').datagrid( {
+			loadFilter:	pagerFilter,
+			url: baseUrl+'base/stu/analysisCount.do?deptId='+val
+        });
+    }
+	 function getExcelUrl() {
+		var val = $('#cc').combobox('getValue');
+        var url = baseUrl + 'xls/zg_xls_count_analysis.do?deptId=' + val;
+        $('#url').attr('href', url)
+    }
+	
+	//下面是测试时的数据，过时
+	function getData(){
+			var rows = [];
+			for(var i=1; i<=800; i++){
+				var amount = Math.floor(Math.random()*1000);
+				var price = Math.floor(Math.random()*1000);
+				rows.push({
+					deptId: i,
+					deptName: 'test '+i,
+					adminAmount:amount,
+					stuAmount:amount,
+					researchAmount:amount,
+					noTypeAmount:0,
+					totalAmount:3*amount
+				});
+			}
+			return rows;
+		}
+		
+		function pagerFilter(data){
+			if (typeof data.length == 'number' && typeof data.splice == 'function'){	// is array
+				data = {
+					total: data.length,
+					rows: data
+				}
+			}
+			var dg = $(this);
+			var opts = dg.datagrid('options');
+			var pager = dg.datagrid('getPager');
+			pager.pagination({
+				onSelectPage:function(pageNum, pageSize){
+					opts.pageNumber = pageNum;
+					opts.pageSize = pageSize;
+					pager.pagination('refresh',{
+						pageNumber:pageNum,
+						pageSize:pageSize
+					});
+					dg.datagrid('loadData',data);
+				}
+			});
+			if (!data.originalRows){
+				data.originalRows = (data.rows);
+			}
+			var start = (opts.pageNumber-1)*parseInt(opts.pageSize);
+			var end = start + parseInt(opts.pageSize);
+			data.rows = (data.originalRows.slice(start, end));
+			return data;
+		}
+    $(function() {
+        $('#tt').datagrid({
+            title: '学院／部门助管数量统计',
+            iconCls: 'icon-edit',
+            width: "100%",
+            height: "auto",
+            rownumbers: true,
+            fit: true,
+            singleSelect: true,
+            idField: 'deptId',
+            pagination: true,
+            pageSize: 30,
+            pageList: [5, 10, 15, 20, 25, 30],
+            columns: [
+                [{
+                    field: 'deptId',
+                    title: '设岗学院／部门ID',
+                    align: 'center',
+                    width: "10%"
+                }, {
+                    field: 'deptName',
+                    title: '设岗学院／部门名称',
+                    width: "20%",
+                    align: 'center',
+                    // editor: 'text'
+                }, {
+                    field: 'adminAmount',
+                    title: '行政事务助管数量',
+                    align: 'center',
+                    width: "10%",
+                    // editor: 'textbox'
+                },
+				{
+                    field: 'stuAmount',
+                    title: '学生事务助管数量',
+                    align: 'center',
+                    width: "10%",
+                    // editor: 'textbox'
+                },{
+                    field: 'researchAmount',
+                    title: '研究性工作助管数量',
+                    align: 'center',
+                    width: "10%",
+                    // editor: 'textbox'
+                },
+				{
+                    field: 'noTypeAmount',
+                    title: '无类别助管数量',
+                    align: 'center',
+                    width: "10%",
+                    // editor: 'textbox'
+                },
+                  {
+                    field: 'totalAmount',
+                    title: '合计',
+                    align: 'center',
+                    width: "10%",
+                    // editor: 'textbox'
+                }]
+            ],
+            toolbar: '#toolbar',
+            onDblClickRow: function() {
+                editDept()
+            },
+            onLoadError: function(XMLHttpRequest, textStatus, errorThrown) {
+                var tips = JSON.parse(XMLHttpRequest.responseText);
+                $.messager.alert('Warning', tips.message);
+            },
+			loadFilter:	pagerFilter
+        }).datagrid({url: baseUrl+'base/stu/analysisCount.do'
+		//url: 'http://localhost:8080/stu_assist_management/base/stu/analysisCount.do'
+		});
+		
+        $('#cc').combobox({
+            url: url_queryDept,
+            valueField: 'deptId',
+            textField: 'deptName',
+            method: 'post',
+            multiple: false,
+            loader: cloader,
+            panelHeight: 200,
+        })
+    });
+    </script>
+</head>
+
+<body>
+    <div id="toolbar">
+        <div style="padding:3px">
+            <span>部门名称:</span>
+            <input id='cc' name='deptName' value="">
+            <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()">查询</a>
+			<a id="url" href="" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="getExcelUrl()">导出excel</a>
+        </div>
+    </div>
+    <table id="tt"></table>
+</body>
+
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>问卷调查</title>
+		<script src=""></script>
+		<script src="js/mui.min.js"></script>
+		<link href="css/mui.css" rel="stylesheet" />
+    <!--引入外来文件-->
+    <script src="../js/common/url.js"></script>
+    <script type="text/javascript" src="../jquery-easyui/js/jquery.min.js"></script>
+    
+		<script type="text/javascript" charset="UTF-8">
+			mui.init();
+		</script>
+		<style type="text/css">
+		body{
+			 
+             font-family: Verdana,"Microsoft YaHei","微软雅黑",Arial, Helvetica, sans-serif;
+		}
+		.mui-content-padded{
+			display: inline-block;
+	        width: 90%;
+            min-height: 30px;
+            line-height: 30px;
+            position: relative;
+            vertical-align: middle;
+            margin: 0 auto;
+            word-break: break-all;
+            font-size:16px;
+		}
+
+    .mui-content{
+      margin-top: 20px;
+       padding-left: 20%;
+       padding-right: 20%;
+    }
+    .mui-input-group{
+       margin-bottom: 30px;
+       font-size:14px;
+    }
+     
+
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<!-- <a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a> -->
+			<h1 class="mui-title">问卷调查</h1>
+		</header>
+
+		<div class="mui-content">
+			<!--此处是用来动态追加对应的提干内容-->
+
+		</div>
+	</body>
+
+</html>
+<!--<script src="../js/jquery-2.0.3.min.js"></script>-->
+<script src="js/template-native.js"></script>
+
+<!--题干模板-->
+<script type="text/templete" id="radio-tigan">
+	<!--使用循环来控制创建的题目个数-->
+	<% for(var i in record){ var item=record[i]; var type="" %>
+	<div class="question q<%=(i)%>" id="<%=item.id%>">
+      <% if(item.type==0){type="单选"} else if(item.type==1){type="多选"} else if(item.type==2){type="问答"}%>
+	    <!-- *<span class="mui-quesNo edit"  id="tihao<%=(i)%>"><%=item.quesNo%></span>. -->
+		<div class="mui-content-padded edit" id="tigan<%=(i)%>" >*<%=item.quesNo%>. <%=item.title%> <b style="color:#007aff">[<%=type%>]</b></div>
+		<!--单选题-->
+		<% if(item.type==0){ %>
+		<div class="mui-input-group" id="option<%=(i)%>">
+			<!--此处使用循环来控制每道题目究竟生成多少选项-->
+			<% for(var j in item.items){ var res=item.items[j]; %>
+			<div class="mui-input-row mui-radio mui-left" id="item<%=(j)%>">
+				<label id="item-lab<%=(i+j)%>" class="item-lab edit" ><%=res%></label>
+				<input name="radio<%=(i)%>" id="item-rdo<%=(j)%>" type="radio" class="radio<%=(i)%> edit">		
+			</div>
+			<% } %>
+		</div>
+		<% } %>
+		<!--多选题-->
+		<% if(item.type==1){ %>
+		     <div class="mui-input-group" id="option<%=(i)%>">
+			<!--此处使用循环来控制每道题目究竟生成多少选项-->
+			<% for(var j in item.items){ var res=item.items[j]; %>
+			<div class="mui-input-row mui-checkbox mui-left" id="item<%=(j)%>">
+				<label id="item-lab<%=(i+j)%>" class="item-lab edit" ><%=res%></label>
+				<input name="checkbox<%=(i)%>" id="item-ckx<%=(j)%>" type="checkbox">		
+			</div>
+			<% } %>
+		</div>
+		<% } %>
+		<!--问答题-->
+		<% if(item.type==2){ %>
+		     <div class="mui-input-group" id="option<%=(i)%>">
+			<textarea class="multi-input" name="textarea<%=(i)%>" id="item-txta<%=(i)%>" style="background-color:#ffffff; border:1px #D7D7D7 solid;font-size:14px;"></textarea>
+		</div>
+		<% } %>	
+		    
+	</div>
+	<% } %>
+</script>
+<script>
+var url="";
+var record=[]; 
+   
+	//相关的处理事件，动态获取时只需要将for循环替换为AJAX的SUCCESS事件中去就好了。 
+	//$("#generate").on("click", function() {
+	// document.getElementById("generate").addEventListener("tap",function(){	
+	function load(){
+		//利用图灵接口演示聊天布局 
+		template.config('escape', false);
+		//获取问卷数据	
+		$.ajax({
+                type:'POST',
+                 //url:baseUrl+'ques/getAllQuesToAstStu.do?stuId='+localStorage.stuId,
+                  url:baseUrl+'ques/searchByPage.do?page=1&rows=1000',
+                dataType:"json",
+                async:false,
+                success:function(data,status){
+                  if(data.status==-1){
+                     $('.btn')[0].innerHTML='';
+                    alert(data.message)
+
+                  }
+                  else{
+                    for(var i=0;i<data.rows.length;i++){
+                    	//只显示必做的题目
+                    	if(data.rows[i].status==0){
+       
+                          var temp=data.rows[i]
+                          var arr=temp.items.split("|");
+                          record[i]={
+                     	   id:temp.id,
+                     	   quesNo:temp.quesNo,
+                     	   title:temp.title,
+                     	   items:arr,
+                     	   type:temp.type
+                     }
+                     }
+                 }
+                }
+             }
+         })
+		//追加模板消息 
+		var str = template('radio-tigan', {
+			"record": record
+		});
+		document.querySelector('.mui-content').innerHTML = str;
+	}
+	load();
+    
+</script>

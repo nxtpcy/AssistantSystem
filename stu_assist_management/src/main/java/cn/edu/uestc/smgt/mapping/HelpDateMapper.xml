@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.edu.uestc.smgt.dao.HelpDateMapper">
+	<resultMap id="BaseResultMap" type="cn.edu.uestc.smgt.pojo.HelpDate">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="help_year" property="helpYear" jdbcType="INTEGER" />
+		<result column="help_month" property="helpMonth" jdbcType="INTEGER" />
+		<result column="deadline_time" property="deadlineTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, help_year, help_month,deadline_time
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from help_date
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	<select id="getAll" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from help_date
+		ORDER by help_year desc,help_month desc
+	</select>
+	<select id="getDeadlineTimeByYearMonth" resultMap="BaseResultMap" parameterType="cn.edu.uestc.smgt.pojo.HelpDate">
+		select <include refid="Base_Column_List" />
+		from help_date where help_year=#{helpYear,jdbcType=INTEGER} and
+		help_month=#{helpMonth,jdbcType=INTEGER}
+	</select>
+	<select id="exist" resultType="java.lang.Integer" parameterType="cn.edu.uestc.smgt.pojo.HelpDate">
+		select count(*) from help_date
+		where help_year=#{helpYear,jdbcType=INTEGER} and
+		help_month=#{helpMonth,jdbcType=INTEGER}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from help_date
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="cn.edu.uestc.smgt.pojo.HelpDate">
+		insert into help_date (id, help_year, help_month,create_time,modify_time,deadline_time
+		)
+		values (#{id,jdbcType=INTEGER}, #{helpYear,jdbcType=INTEGER},
+		#{helpMonth,jdbcType=INTEGER},now(),now(), #{deadlineTime,jdbcType=TIMESTAMP},
+		)
+	</insert>
+	<insert id="insertSelective" parameterType="cn.edu.uestc.smgt.pojo.HelpDate">
+		insert into help_date
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="helpYear != null">
+				help_year,
+			</if>
+			<if test="helpMonth != null">
+				help_month,
+			</if>
+			<if test="deadlineTime != null">
+				deadline_time,
+			</if>
+			create_time,modify_time,
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="helpYear != null">
+				#{helpYear,jdbcType=INTEGER},
+			</if>
+			<if test="helpMonth != null">
+				#{helpMonth,jdbcType=INTEGER},
+			</if>
+			<if test="deadlineTime != null">
+				#{deadlineTime,jdbcType=TIMESTAMP},
+			</if>
+			now(),now()
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="cn.edu.uestc.smgt.pojo.HelpDate">
+		update help_date
+		<set>
+			<if test="helpYear != null">
+				help_year = #{helpYear,jdbcType=INTEGER},
+			</if>
+			<if test="helpMonth != null">
+				help_month = #{helpMonth,jdbcType=INTEGER},
+			</if>
+			modify_time=now()
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="cn.edu.uestc.smgt.pojo.HelpDate">
+		update help_date
+		set help_year = #{helpYear,jdbcType=INTEGER},
+		help_month = #{helpMonth,jdbcType=INTEGER},
+		modify_time=now()
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+</mapper>

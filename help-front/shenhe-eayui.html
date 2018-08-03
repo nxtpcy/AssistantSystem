@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Row Editing in DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/demo.css">
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="./js/common/common.js"></script>
+    <script type="text/javascript" src="./js/common/url.js"></script>
+    <script type="text/javascript" src="./js/common/loader.js"></script>
+    <script type="text/javascript" src='./js/common/month.js'></script>
+    <script type="text/javascript ">
+    var url;
+
+    function doSearch() {
+        // var deptId=
+        var val = $('#cc').combobox('getValues');
+        if (val[0] == '') {
+            val = val.slice(1)
+        }
+        var deptIds = val.join(',');
+        var v = $('#helpDate').datebox('getValue');
+        // console.log(v);
+        $('#tt').datagrid('load', {
+            statusCode: $('#statusCode').combobox('getValue'),
+            type: $('#type').combobox('getValue'),
+            deptId: deptIds, //deptName
+            helpDate: v,
+            admin: 1,
+            officeType: $('#officeType').combobox('getValue'),
+            studentName: $('#studentName').val(),
+            studentId: $('#studentId').val(),
+            officeName: $('#officeName').val()
+        });
+        $('#tt').datagrid('unselectAll');
+    }
+
+    function agree() {
+        var rows = $('#tt').datagrid('getSelections');
+        // var statusCode = $('#statusCode').combobox('getValue');
+        var flag = true;
+        var ids = ''
+
+        console.log(rows);
+        if (rows.length === 0) {
+            $.messager.alert('Warning', '请选择一条数据');
+            return false;
+        }
+        $.each(rows, function(i, val) {
+            ids = val.id + ',' + ids
+            if (val.statusCode != 1) {
+                flag = false
+            }
+        })
+        if (flag) {
+            var newUrl = buzhu_url.agree + '?' + 'buzhuList=' + ids;
+            $.ajax({
+                type: "POST",
+                // url: newUrl,
+                url: buzhu_url.agree + '?' + 'buzhuList=' + ids,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(data) {
+                    if (data.status == 1) {
+                        $.messager.alert('Warning', data.message);
+                        $('#tt').datagrid('reload');
+                        $('#tt').datagrid('unselectAll');
+                    } else {
+                        $.messager.alert('Warning', data.message);
+                    }
+
+                }
+            })
+        } else {
+            $.messager.alert('Warning', '请确认是否为待审核状态');
+
+        }
+
+    }
+
+    function disagree() {
+        var rows = $('#tt').datagrid('getSelections');
+        var ids = ''
+        var flag = true;
+        if (rows.length === 0) {
+            $.messager.alert('Warning', '请选择一条数据');
+            return false;
+        }
+        $.each(rows, function(i, val) {
+            ids = val.id + ',' + ids
+            if (val.statusCode != 1) {
+                flag = false
+            }
+        })
+        if (flag) {
+            var newUrl = buzhu_url.disagree + '?' + 'buzhuList=' + ids;
+            $.ajax({
+                type: "POST",
+                url: newUrl,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(data) {
+                    if (data.status == 1) {
+                        $.messager.alert('Warning', data.message);
+                        $('#tt').datagrid('reload');
+                        $('#tt').datagrid('unselectAll');
+                    } else {
+                        $.messager.alert('Warning', data.message);
+
+                    }
+                }
+            })
+        } else {
+            $.messager.alert('Warning', '请确认是否为待审核状态');
+        }
+
+    }
+
+    function reedit() {
+        var rows = $('#tt').datagrid('getSelections');
+        var ids = '';
+        var flag = true;
+        if (rows.length === 0) {
+            $.messager.alert('Warning', '请选择一条数据');
+            return false;
+        }
+        $.each(rows, function(i, val) {
+            ids = val.id + ',' + ids
+            if (val.statusCode != 1) {
+                flag = false
+            }
+        });
+
+        if (flag) {
+            var newUrl = buzhu_url.reedit + '?' + 'buzhuList=' + ids;
+            $.ajax({
+                type: "POST",
+                url: newUrl,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(data) {
+                    if (data.status == 1) {
+                        $.messager.alert('Warning', data.message);
+                        $('#tt').datagrid('reload');
+                        $('#tt').datagrid('unselectAll');
+
+                    } else {
+                        $.messager.alert('Warning', data.message);
+                    }
+                }
+            })
+        } else {
+            $.messager.alert('Warning', '请确认是否为待审核状态');
+        }
+
+    }
+
+    $(function() {
+        $('#tt').datagrid({
+            title: '补助信息审核管理',
+            iconCls: 'icon-edit',
+            width: "100%",
+            height: "auto",
+            rownumbers: true,
+            fit: true,
+            singleSelect: false,
+            idField: 'id',
+            url: buzhu_url.queryBuZhu,
+            pagination: true,
+            pageSize: 30,
+            pageList: [5, 10, 15, 20, 25, 30, 100, 200],
+            method: 'post',
+            queryParams: {
+                statusCode: 1,
+                // type:0,
+                admin: 1,
+                helpDate: ''
+            },
+            columns: [
+                [{
+                    field: 'id',
+                    checkbox: true
+                }, {
+                    field: 'stuId',
+                    title: '学号',
+                    align: 'center',
+                    width: "9%"
+                }, {
+                    field: 'studentName',
+                    title: '姓名',
+                    align: 'center',
+                    width: "5%"
+                }, {
+                    field: 'deptName',
+                    title: '设岗学院/部门名称',
+                    width: "9%",
+                    align: 'center',
+                }, {
+                    field: 'officeName',
+                    title: '岗位科室',
+                    width: "5%",
+                    align: 'center',
+                }, {
+                    field: 'officeTypeName',
+                    title: '岗位类型',
+                    width: "5%",
+                    align: 'center',
+                }, {
+                    field: 'bankName',
+                    title: '银行',
+                    width: "5%",
+                    align: 'center',
+                }, {
+                    field: 'bankNo',
+                    title: '银行卡号',
+                    width: "10%",
+                    align: 'center',
+                }, {
+                    field: 'helpDate',
+                    title: '考核年月',
+                    align: 'center',
+                    width: "5%"
+                }, {
+                    field: 'money',
+                    title: '金额',
+                    align: 'center',
+                    width: "3%"
+                }, {
+                    field: 'remark',
+                    title: '备注',
+                    align: 'center',
+                    width: "5%"
+                }, {
+                    field: 'createTime',
+                    title: '保存时间',
+                    align: 'center',
+                    width: "9%",
+                    formatter: function(val, rec) {
+                        return getSmpFormatDateByLong(val, true)
+
+                    }
+                }, {
+                    field: 'modifyTime',
+                    title: '最后修改时间',
+                    align: 'center',
+                    width: "9%",
+                    formatter: function(val, rec) {
+                        return getSmpFormatDateByLong(val, true)
+
+                    }
+                }, {
+                    field: 'submitTime',
+                    title: '提交时间',
+                    align: 'center',
+                    width: "9%",
+                    formatter: function(val, rec) {
+                        return getSmpFormatDateByLong(val, true)
+
+                    }
+                }, {
+                    field: 'statusCodeName',
+                    title: '状态',
+                    width: "12%",
+                    align: 'center',
+                }]
+            ],
+            loadFilter: function(data) {
+                console.log('loadFilter:')
+                console.log(data);
+                var value = {
+                    total: data.total,
+                    rows: []
+                };
+                for (var i = 0; i < data.rows.length; i++) {
+                    // var o = {};
+                    if (data.rows[i].statusCode != 0) {
+                        value.rows.push(data.rows[i]);
+                    } else {
+                        value.total--;
+                    }
+                }
+                console.log(value);
+                return value;
+            },
+            toolbar: '#toolbar',
+            onLoadError: function(XMLHttpRequest, textStatus, errorThrown) {
+                var tips = JSON.parse(XMLHttpRequest.responseText);
+                $.messager.alert('Warning', tips.message);
+            }
+        });
+
+        $('#cc').combobox({
+            url: url_queryDept,
+            valueField: 'deptId',
+            textField: 'deptName',
+            method: 'post',
+            multiple: true,
+            loader: cloader,
+            panelHeight: 200,
+            onChange: function(n, o) {
+                var len = n.length;
+                var last = n[len - 1];
+                var depts = $('#cc').combobox('getData');
+                var dept_arr = [];
+                // console.log(depts.length);
+                $.each(depts, function(i, val) {
+                        dept_arr.push(val.deptId)
+                    })
+                    // dept_arr = dept_arr.slice(1)
+                if (len < depts.length) {
+                    var val = $('#cc').combobox('getValues');
+                    if (val[0] == '') {
+                        $('#cc').combobox('setValues', val.slice(1));
+                    } else {
+                        /*第一个不等于all*/
+                        if (len == depts.length - 1) {
+                            console.log('else');
+                            val.push('')
+                            $('#cc').combobox('setValues', val);
+                        }
+                    }
+                }
+                if (last == '') {
+                    /*全选*/
+                    console.log('last=');
+                    if (len < depts.length) {
+                        $('#cc').combobox('setValues', dept_arr);
+                        selectAll = true;
+                    }
+                }
+            },
+        })
+        $('#statusCode').combobox('setValue', 1);
+        if (!$("#helpDate").datebox('getValue')) {
+            $("#help").datebox('setValue', myFormatter(new Date()));
+        }
+        // $('#type').combobox('setValue',0)
+
+    });
+    </script>
+</head>
+
+<body>
+    <!-- <h2>审核信息管理</h2> -->
+    <!-- <p></p> -->
+    <div id="toolbar">
+        <div id="ts" style="padding:3px">
+            <span>审核状态:</span>
+            <select id="statusCode" value="1" class="easyui-combobox" name="statusCode" style="width:100px;" panelHeight="auto">
+                <option value="">全部</option>
+                <option value="1">已提交待审核</option>
+                <option value="2">审核通过</option>
+                <option value="3">审核未通过</option>
+                <option value="4">驳回状态</option>
+            </select>
+            <span>补助类型:</span>
+            <select id="type" class="easyui-combobox" name="type" panelHeight="auto" style="width:100px;">
+                <option value="">全部</option>
+                <option value="0">正常发放</option>
+                <option value="1">历史补助</option>
+            </select>
+            <span>部门名称:</span>
+            <input id='cc' name='deptName' value="">
+            <span>考核年月:</span>
+            <input id="helpDate" type="text" class="easyui-datebox" data-options="formatter:myFormatter,parser:myParser">
+            <!-- <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()">查询</a> -->
+        </div>
+        <div id="ts2" style="padding:3px">
+            <span>岗位类型:</span>
+            <select id="officeType" value="1" class="easyui-combobox" name="officeType" style="width:100px;" panelHeight="auto">
+                <option value="">全部</option>
+                <option value="0">行政事务</option>
+                <option value="1">学生事务</option>
+                <option value="2">研究性工作</option>
+            </select>
+            <span>岗位科室:</span>
+            <input id='officeName' name='officeName' value="">
+            <span>学生姓名:</span>
+            <input id='studentName' name='studentName' value="">
+            <span>学号:</span>
+            <input id='studentId' name='studentId' value="">
+            <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()">查询</a>
+        </div>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="agree()">同意已选</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="disagree()">拒绝已选</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="reedit()">驳回已选</a>
+    </div>
+    <!-- 用户信息表格 -->
+    <table id="tt"></table>
+    <!-- 编辑助管对话框 -->
+    <div id="dlg" class="easyui-dialog" style="width:500px" closed="true" buttons="#dlg-buttons">
+        <form id="fm" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">助管信息</div>
+            <div style="margin-bottom:10px">
+                <input id="add_stuId" name="stuId" class="easyui-textbox" required="true" label="学号:" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="add_name" name="name" class="easyui-textbox" required="true" label="姓名" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="add_deptId" name="deptId" class="easyui-textbox" label="部门编号:" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="add_bankName" name="bankName" class="easyui-textbox" label="银行" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="add_bankNo" name="bankNo" class="easyui-textbox" label="银行卡号" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="add_telephone" name="telephone" class="easyui-textbox" label="电话号码" style="width:100%">
+            </div>
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveUser()" style="width:90px">保存</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">取消</a>
+    </div>
+</body>
+
+</html>

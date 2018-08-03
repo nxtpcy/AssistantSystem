@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Row Editing in DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/demo.css">
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="./js/common/common.js"></script>
+    <script src="./js/common/loader.js"></script>
+    <script src="./js/common/url.js"></script>
+    <script src="./js/common/validate-extend.js"></script>
+    <style type="text/css">
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: auto;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .up {
+            width: 100%;
+            margin-bottom: 30px;
+
+        }
+
+        .down {
+            width: 100%;
+            height: auto;
+        }
+
+        #dlg1 span {
+            width: 27%;
+        }
+
+        .dlg-span {
+            width: 27%;
+            display: inline-block;
+            height: 25px;
+            line-height: 25px;
+        }
+
+        #dlg1 label {
+            width: 110px;
+        }
+
+        .dlg-select {
+            /*margin-left: 80px;*/
+            border-radius: 1px;
+            display: inline-block;
+            width: 70.79%;
+            height: 25px;
+            /*line-height: 25px;*/
+        }
+
+        #detail_dlg label {
+            width: 110px;
+        }
+    </style>
+    <script type="text/javascript">
+        var url;
+        //暂存岗位期限和聘期
+        var jobTime = "";
+        var employmentPeriod = "";
+        var deptId = localStorage.deptId;
+
+        var current_deptId = localStorage.deptId;
+        //搜索下面的部门
+        function doFind() {
+            var val = $('#dd').combobox('getValues');
+            if (val[0] == '') {
+                val = val.slice(1)
+            }
+            var teacherName = $('#dd1').val();
+            // console.log(teacherName);
+            var officeName = $('#dd2').val();
+            console.log(officeName);
+            var type = $('#dd3').combobox('getValue')
+            console.log(type);
+            var jobStatus = $('#jobStatus').combobox('getValue');
+            var deptIds = val.join(',');
+            var query = {}
+
+            if (teacherName) {
+                query.teacherName = teacherName;
+            }
+            if (officeName) {
+                query.officeName = officeName;
+            }
+            if (type) {
+                query.type = type;
+            }
+            if (deptIds) {
+                query.deptId = deptIds;
+            }
+            if (jobStatus) {
+                query.jobStatus = jobStatus;
+            }
+            console.log(query)
+            if (!current_deptId) {
+                $('#tt1').datagrid('load', query);
+            } else {
+                query.deptId = current_deptId,
+                    $('#tt1').datagrid('load', query);
+            }
+        }
+
+        //新建下面的
+        function newApply() {
+            //插入下拉框
+            $('#fm_deptId').append('<option>bitem6</option>');
+            var depts = [];
+            var query = {
+                rows: 200,
+                page: 1
+            };
+            var newHtml = '';
+            $.ajax({
+                type: 'POST',
+                async: false,
+                url: baseUrl + 'base/dept/list.do',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(query),
+                dataType: 'json',
+                success: function (data) {
+                    $.each(data.result, function (i, val) {
+                        var temp = val.deptId + val.deptName;
+                        var option = '<option value=' + val.deptId + '>' + temp + '</option>';
+                        newHtml = newHtml + option;
+                    })
+                    $('#fm_deptId')[0].innerHTML = newHtml;
+
+                    //下拉框生成完毕
+                    $('#fm_jobTime').textbox('setValue', jobTime);
+                    $('#fm_employmentPeriod').textbox('setValue', employmentPeriod);
+                    $('#dlg1').dialog('open').dialog('center').dialog('setTitle', '添加新申请');
+                    // $('#fm').form('clear');
+                    if (current_deptId) {
+                        $('#fm_deptId  option[value=' + current_deptId + '] ').attr("selected", true);
+                        $('#fm_deptId').attr("disabled", "disabled");
+                    }
+                    url = baseUrl + "office/apply.do";
+                },
+                error: function () {
+                    alert('系统错误，请稍后再试！');
+                    //error.apply(this, arguments);
+                }
+            });
+        }
+        function destoryDialog() {
+            $('#fm').form('clear');
+            $("#dlg1").dialog("close");
+        }
+        function saveApply() {
+            var data = $("#fm").serializeObject();
+            data.jobTime = jobTime;
+            data.jobStatus = "0";
+            if (current_deptId) {
+                data.deptId = current_deptId
+            }
+
+            if ($("#fm").form('validate')) {
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: 'json',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    crossDomain: true,
+                    success: function (result) {
+                        if (result.status == 1) {
+                            $('#dlg1').dialog('close'); // close the dialog
+                            $('#tt1').datagrid('reload'); // reload the user data
+                            $('#tt').datagrid('reload'); //每次申请的岗位数更新完，需要更新可以申请的岗位数
+                        } else {
+                            $.messager.show({ // show error message
+                                title: 'Error',
+                                msg: result.message
+                            });
+                        }
+                    }
+                })
+            }
+        }
+
+        function editApply() {
+            var row = $('#tt1').datagrid('getSelected');
+
+            if (row) {
+                if (row.statusCodeName == "审核通过") {
+                    alert("审核通过，不能编辑！")
+                }
+                else if (row.statusCodeName == "已发布") {
+                    alert("已发布，不能编辑！")
+                }
+                else if (row.statusCodeName == "审核不通过") {
+                    alert("审核不通过不能编辑，请重新提交申请！")
+                }
+                else {
+                    row.jobTime = jobTime;
+                    row.employmentPeriod = employmentPeriod;
+                    //生成下拉框，因为学院下拉框是动态生成的，不生成的话，无法获取到数据
+                    $('#fm_deptId').append('<option>bitem6</option>');
+                    var depts = [];
+                    var query = {
+                        rows: 200,
+                        page: 1
+                    }
+                    var newHtml = '';
+                    $.ajax({
+                        type: 'POST',
+                        async: false,
+                        url: baseUrl + 'base/dept/list.do',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify(query),
+                        dataType: 'json',
+                        success: function (data) {
+
+                            $.each(data.result, function (i, val) {
+                                var temp = val.deptId + val.deptName;
+                                var option = '<option value=' + val.deptId + '>' + temp + '</option>';
+                                newHtml = newHtml + option;
+                            })
+                            $('#fm_deptId')[0].innerHTML = newHtml;
+                            //下拉框生成完毕
+                            $('#fm').form('load', row);
+                            //设置选中的值
+                            $('#fm_deptId  option[value=' + row.deptId + '] ').attr("selected", true);
+                            $('#dlg1').dialog('open').dialog('center').dialog('setTitle', '编辑岗位');
+                            //将学院编号设为禁用
+                            // $('#fm_deptId').attr("disabled","disabled");
+
+                            url = baseUrl + "office/update.do";
+                        },
+                        error: function () {
+                            alert('系统错误，请稍后再试！');
+                            //error.apply(this, arguments);
+                        }
+                    });
+                }
+
+
+                /*
+                 $('#dlg1').dialog('open').dialog('center').dialog('setTitle', '编辑岗位');
+                 console.log(row.deptId);
+
+                 $('#fm').form('load', row);
+                 //$('#fm_deptId option[value=' +row.deptId +']').attr("selected",true);
+                 url = 'http://115.29.136.190:8080/help/office/update.do';
+                 console.log(url)*/
+            } else {
+                $.messager.alert('Warning', "请先选择一条数据");
+            }
+        }
+        function showDetail(index) {
+            var data = $('#tt1').datagrid('getData').rows[index];
+            data.jobTime = jobTime;
+            data.employmentPeriod = employmentPeriod;
+            $('#detail_dlg').form('load', data);
+            $('#detail_dlg').dialog('open').dialog('center').dialog('setTitle', '查看详情');
+        }
+        function closeDlg() {
+            $('#detail_dlg').dialog('close');
+            $('#detail_dlg').form('clear');
+        }
+        //定义查看详情的函数
+        function rowformater(value, row, index) {
+            return '<a href="#" onclick="showDetail(' + index + ')">查看详情</a>';
+        }
+        //获取聘期
+        function rowformater_e(value, row, index) {
+            return employmentPeriod;
+        }
+        //获取岗位期限
+        function rowformater_t(value, row, index) {
+            return jobTime;
+        }
+        //获取岗位类型
+        function rowformater_p(value, row, index) {
+            if (value == 0) {
+                return "行政事务";
+            }
+            else if (value == 1) {
+                return "学生事务";
+            }
+            else if (value == 2) {
+                return "研究性工作";
+            }
+
+        }
+        //动态改变两个表所在div的高度，使其充实整个页面
+        function getContentSize() {
+            var wh = document.documentElement.clientHeight;
+            var eh = $("#up").height();
+            var ch;
+            if (current_deptId) {
+                ch = (wh - eh - 30) + "px";
+            }
+            else {
+                ch = (wh - eh) + "px";
+            }
+            $("#down").css("height", ch);
+        }
+
+        $(function () {
+            //关闭对话框时，清除数据
+            $(".panel-tool-close").attr("onclick", "destoryDialog();");
+            //获取岗位期限
+            $.ajax({
+                type: 'POST',
+                async: false,
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                url: baseUrl + '/office/getJobPeriod.do',
+                success: function (data) {
+                    jobTime = data.body;
+                }
+            });
+
+            //获取聘期
+            $.ajax({
+                type: "POST",
+                async: false,
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json', //非常关键
+                url: baseUrl + "/office/getEmploymentPeriod.do",
+                success: function (data) {
+                    employmentPeriod = data.body
+                }
+            });
+            //部门管理员
+            if (current_deptId) {
+                getContentSize();
+                $("#tt").datagrid({
+                    idField: 'type',
+                    queryParams: {
+                        deptId: current_deptId
+                    },
+                    url: baseUrl + "office/statistic.do",
+                    //选择合并学院代号和学院名称
+                    onBeforeLoad: function (data) {
+
+                        $(this).datagrid("autoMergeCells", ['deptId', 'deptName'])
+                        //判断可申请岗位是否为0
+                        var index = [];
+                        var count = 0;
+                        //删除多行数据，先将要删除的数据的行数据记下来
+                        for (var i = 0; i < data.total; i++) {
+
+                            if (data.rows[i].maxJobNum == 0) {
+
+                                index[count] = data.rows[i];
+                                count++;
+
+                            }
+                        }
+                        //再找到对应的行号，删除，如果直接删除，因为删了之后行号变了所以结果可能会不对
+                        if (count > 0) {
+                            for (var j = 0; j < count; j++) {
+                                var del = $('#tt').datagrid('getRowIndex', index[j]);
+                                $('#tt').datagrid('deleteRow', del);
+                            }
+                        }
+
+                        if ($('#tt').datagrid('getRows').length == 2) {
+                            $('#up').css("height", "120px");
+                            getContentSize();
+
+                        }
+                        else if ($('#tt').datagrid('getRows').length == 1) {
+                            $('#up').css("height", "107px");
+                            getContentSize();
+
+                        }
+                        else if ($('#tt').datagrid('getRows').length == 0) {
+                            alert("目前无可申请岗位")
+                            var wh = document.documentElement.clientHeight;
+                            $('#up').css("display", "none")
+                            $("#down").css("height", wh + "px");
+
+                            // $("#tt").css("font-size","26px");
+                            // $("#up").html("无可申请岗位")
+                        }
+                    }
+                });
+
+
+                $("#tt1").datagrid({
+                    idField: 'id',
+                    url: baseUrl + "office/searchByPage.do",
+                    height: "auto",
+                    pagination: true,
+                    pageSize: 30,
+                    pageList: [5, 10, 15, 20, 25, 30],
+                    queryParams: {
+                        deptId: current_deptId,
+                    },
+                    //选择合并学院代号和学院名称
+                    onLoadSuccess: function (data) {
+                        if (data.total == 0) {
+                            alert('目前无申请记录')
+                        }
+                        $(this).datagrid("autoMergeCells", ['deptId', 'deptName', 'guidTrain'])
+                    }
+                })
+            }
+            else {
+                $("#up").css("height", 0);
+                getContentSize();
+                $("#tt1").datagrid({
+                    idField: 'id',
+                    url: baseUrl + "office/searchByPage.do",
+                    height: "auto",
+                    pagination: true,
+                    pageSize: 30,
+                    pageList: [5, 10, 15, 20, 25, 30],
+                    //选择合并学院代号和学院名称
+                    onLoadSuccess: function (data) {
+                        if (data.total == 0) {
+                            alert('目前无申请记录')
+                        }
+                        $(this).datagrid("autoMergeCells", ['deptId', 'deptName', 'guidTrain'])
+                    }
+                })
+            }
+
+
+            $("#dd").combobox({
+                url: baseUrl + 'base/dept/list.do',
+                valueField: 'deptId',
+                textField: 'deptName',
+                method: 'post',
+                multiple: false,
+                loader: cloader,
+                panelHeight: 200,
+                // onChange: function(n, o) {
+                //         var len = n.length;
+                //         // console.log(len);
+                //         var last = n[len - 1];
+                //         var depts = $('#dd').combobox('getData');
+                //         var dept_arr = [];
+                //         console.log(depts.length);
+                //         $.each(depts, function(i, val) {
+                //                 dept_arr.push(val.deptId)
+                //             })
+                //             // dept_arr = dept_arr.slice(1)
+                //         if (len < depts.length) {
+                //             var val = $('#dd').combobox('getValues');
+                //             if (val[0] == '') {
+                //                 $('#dd').combobox('setValues', val.slice(1));
+                //             } else {
+                //                 /*第一个不等于all*/
+                //                 if (len == depts.length - 1) {
+                //                     console.log('else');
+                //                     val.push('')
+                //                     $('#dd').combobox('setValues', val);
+                //                 }
+                //             }
+                //         }
+                //         if (last == '') {
+                //             /*全选*/
+                //             console.log('last=');
+                //             if (len < depts.length) {
+                //                 $('#dd').combobox('setValues', dept_arr);
+                //                 selectAll = true;
+                //             }
+                //         }
+                //     },
+            });
+            if (current_deptId) {
+                $('#dd').combobox('setValue', current_deptId);
+                $('#dd').combobox('disable');
+            }
+            else {
+                $('#up').css("display", "none");
+            }
+
+            //由于easyui不支持placeholder属性，因此当页面加载完毕的时候，将easyui生成的input标签的placeholder重新设置.
+            window.onload = numberInputPlaceholder();
+
+        });
+        //扩展，使得datagrid中相同的列合并
+        $.extend($.fn.datagrid.methods, {
+            autoMergeCells: function (jq, fields) {
+                return jq.each(function () {
+                    var target = $(this);
+                    if (!fields) {
+                        fields = target.datagrid("getColumnFields");
+                    }
+                    var rows = target.datagrid("getRows");
+                    var i = 0,
+                        j = 0,
+                        temp = {};
+                    for (i; i < rows.length; i++) {
+                        var row = rows[i];
+                        j = 0;
+                        for (j; j < fields.length; j++) {
+                            var field = fields[j];
+                            var tf = temp[field];
+                            if (!tf) {
+                                tf = temp[field] = {};
+                                tf[row[field]] = [i];
+                            } else {
+                                var tfv = tf[row[field]];
+                                if (tfv) {
+                                    tfv.push(i);
+                                } else {
+                                    tfv = tf[row[field]] = [i];
+                                }
+                            }
+                        }
+                    }
+                    $.each(temp,
+                        function (field, colunm) {
+                            $.each(colunm,
+                                function () {
+                                    var group = this;
+
+                                    if (group.length > 1) {
+                                        var before, after, megerIndex = group[0];
+                                        for (var i = 0; i < group.length; i++) {
+                                            before = group[i];
+                                            after = group[i + 1];
+                                            if (after && (after - before) == 1) {
+                                                continue;
+                                            }
+                                            var rowspan = before - megerIndex + 1;
+                                            if (rowspan > 1) {
+                                                target.datagrid('mergeCells', {
+                                                    index: megerIndex,
+                                                    field: field,
+                                                    rowspan: rowspan
+                                                });
+                                            }
+                                            if (after && (after - before) != 1) {
+                                                megerIndex = after;
+                                            }
+                                        }
+                                    }
+                                });
+                        });
+                });
+            }
+        });
+
+        /**
+         easyui number placeholder重新设置placeholder
+         */
+        function numberInputPlaceholder() {
+            $(".easyui-textbox").each(function (i) {
+                var span = $(this).siblings("span")[0];
+                var targetInput = $(span).find("input:first");
+                if (targetInput) {
+                    $(targetInput).attr("placeholder", $(this).attr("placeholder"));
+                }
+
+            });
+        }
+    </script>
+</head>
+<body>
+<div class="up" id="up" style="height:133px;">
+    <table id="tt" title="岗位指导" class="easyui-datagrid" style="width:100%;height:150px" singleSelect="true" fit="true"
+           rownumbers="true" idField='deptId' method='post'>
+        <thead>
+        <tr>
+            <th field="deptId" width="20%" align="center">学院/部门ID</th>
+            <th field="deptName" width="20%" align="center">学院/部门名称</th>
+            <th field="type" width="20%" align="center" data-options="formatter:rowformater_p">岗位类型</th>
+            <th field="maxJobNum" width="20%" align="center">研究生指导岗位数量</th>
+            <th field="leftJobNum" width="20%" align="center">可申请岗位数</th>
+        </tr>
+        </thead>
+    </table>
+</div>
+<div id="down" style="width:100%;height:auto;">
+    <div id="toolbar1">
+        <div style="padding:3px">
+            <!--             <span>部门 ID:</span>
+                        <input id="deptId" style="line-height:26px;border:1px solid #ccc"> -->
+            <span>部门名称:</span>
+            <input id='dd'>
+            <span>岗位类型:</span>
+            <select id="dd3" value="1" class="easyui-combobox" style="width:100px;" panelHeight="auto">
+                <option value="">全部</option>
+                <option value="0">行政事务</option>
+                <option value="1">学生事务</option>
+                <option value="2">研究性工作</option>
+            </select>
+            <span>设岗科室名称:</span>
+            <input id='dd2' style="line-height:22px;border:1px solid #ccc;border-radius:5px;">
+            <span>指导老师:</span>
+            <input id='dd1' style="line-height:22px;border:1px solid #ccc;border-radius:5px;">
+            <span>审核状态:</span>
+            <select id="jobStatus" value="1" class="easyui-combobox" style="width:100px;" panelHeight="auto">
+                <option value="">全部</option>
+                <option value="0">已提交待审核</option>
+                <option value="1">审核通过</option>
+                <option value="2">审核不通过</option>
+                <option value="3">已发布</option>
+            </select>
+            <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doFind()">查询</a>
+        </div>
+        <div>
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newApply()">申请</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true"
+               onclick="editApply(' + index + ')">编辑</a>
+        </div>
+    </div>
+    <table id="tt1" title="岗位申请" class="easyui-datagrid" style="width:100%;height:auto;" singleSelect="true"
+           data-options="fit:true" rownumbers="true" idField='deptId' method='post' toolbar='#toolbar1'>
+        <thead>
+        <tr>
+            <th rowspan="2" field="deptId" width="5%" align="center">学院/部门ID</th>
+            <th rowspan="2" field="deptName" width="10%" align="center">学院/部门名称</th>
+            <th rowspan="2" field="jobTime" width="10%" align="center" data-options="formatter:rowformater_t">岗位期限</th>
+            <th rowspan="2" field="employmentPeriod" width="10%" align="center" data-options="formatter:rowformater_e">
+                聘期
+            </th>
+            <th rowspan="2" field="teacherName" width="10%" align="center">指导老师</th>
+            <th rowspan="2" field="telephone" width="7%" align="center" hidden="true">指导老师移动电话</th>
+            <th rowspan="2" field="guideTrain" width="10%" align="center" hidden="true">指导与培训体系</th>
+            <th colspan="7" align="center" hidden="true">岗位要求</th>
+            <th rowspan="2" field="statusCodeName" align="center" width="10%">审核状态</th>
+        </tr>
+        <tr>
+            <th field="officeName" align="center" width="11%">设岗科室名称</th>
+            <th field="typeName" align="center" width="11%">岗位类型</th>
+            <th field="jobNum" align="center" width="11%">设岗科室岗位数</th>
+            <th field="jobWork" align="center" width="8%" hidden="true">科室工作量</th>
+            <th field="responsibility" align="center" width="10%" hidden="true">科室工作职责</th>
+            <th field="ability" align="center" width="12%" hidden="true">科室岗位培养的综合素质</th>
+            <th field="operator" title="详细信息" width="11%" align="center"
+                data-options="formatter:rowformater">详细信息
+            </th>
+        </tr>
+        </thead>
+    </table>
+
+    <div id="dlg1" class="easyui-dialog" style="width:550px" closed="true" buttons="#dlg1-buttons"
+         data-options="draggable:false,modal:true">
+        <form id="fm" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">申请信息</div>
+            <div>
+                <input id="fm_id" name="id" style="display:none;" type="hidden">
+            </div>
+            <div style="margin-bottom:10px">
+            <span class="dlg-span">
+                 学院/部门ID：
+            </span>
+                <select class="dlg-select" id="fm_deptId" class="" name="deptId">
+                </select>
+            </div>
+            <div style="margin-bottom:10px" id="add_j">
+                <input id="fm_jobTime" class="easyui-textbox" name="jobTime" style="width:100%;" label="岗位期限"
+                       disabled="true">
+            </div>
+
+            <div style="margin-bottom:10px">
+                <input id="fm_employmentPeriod" name="employmentPeriod" class="easyui-textbox" style="width:100%;"
+                       label="聘期" disabled="true">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_teacherName" name="teacherName" class="easyui-textbox" required="true" label="指导老师:"
+                       style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_telephone" name="telephone" class="easyui-textbox easyui-validatebox" required="true"
+                       label="指导老师移动电话:" data-options="validType:'mobileAndTel'" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_guideTrain" name="guideTrain" class="easyui-textbox" required="true" label="指导与培训体系:"
+                       style="width:100%;height:50px;" data-options="multiline:true">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_officeName" name="officeName" class="easyui-textbox" required="true" label="岗位科室名称:"
+                       style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <!--<input class="easyui-combobox" id="fm_type" name="rwlb" style="width:100%" data-options="valueField:'type', textField:'typeName', panelHeight:'auto'" label="岗位类型:" url="typeName1.json">-->
+                <span class="dlg-span">
+                 岗位类型：
+            </span>
+                <select class="dlg-select" id="fm_type" class="" name="type">
+                    <option value="0">0行政事务</option>
+                    <option value="1">1学生事务</option>
+                    <option value="2">2研究性工作</option>
+                </select>
+
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_jobNum" name="jobNum" class="easyui-textbox easyui-validatebox" required="true" label="岗位数:"
+                       type="number" data-options="validType:'number'" style="width:100%" placeholder="x(不能超过可申请岗位数)">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_jobWork" name="jobWork" class="easyui-textbox" type="number" required="true" label="岗位工作量:"
+                       style="width:78%;display: inline-block;" placeholder="请输入岗位工作量">
+                <p style="width: 20%;display: inline-block;">学时/人/月</p>
+            </div>
+
+            <div style="margin-bottom:10px">
+                <input id="fm_responsibility" name="responsibility" class="easyui-textbox" required="true" label="岗位职责:"
+                       style="width:100%;height:50px;" data-options="multiline:true">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="fm_ability" name="ability" class="easyui-textbox" required="true" label="培养的综合素质:"
+                       style="width:100%;height:50px;" data-options="multiline:true">
+            </div>
+        </form>
+    </div>
+    <div id="dlg1-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveApply()"
+           style="width:90px">确定</a>
+        <!--    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg1').dialog('close')" style="width:90px">取消</a> -->
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="destoryDialog()"
+           style="width:90px">取消</a>
+    </div>
+</div>
+
+<!-- 详细信息对话框 -->
+<div id="detail_dlg" class="easyui-dialog" style="width:550px" closed="true" buttons="#detail-buttons"
+     data-options="draggable:false,modal:true">
+    <form id="detail_fm" method="post" novalidate style="margin:0;padding:20px 50px">
+        <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">详细信息</div>
+        <div style="margin-bottom:10px">
+            <input name="deptName" class="easyui-textbox easyui-validatebox" required="true" label="设岗学院:"
+                   style="width:100%" disabled="true">
+        </div>
+        <div style="margin-bottom:10px" id="detail_add_j">
+            <input id="detail_fm_jobTime" class="easyui-textbox" name="jobTime" style="width:100%;" label="岗位期限"
+                   disabled="true">
+        </div>
+        <div style="margin-bottom:10px">
+            <input id="detail_fm_employmentPeriod" name="employmentPeriod" class="easyui-textbox" style="width:100%;"
+                   label="聘期" disabled="true">
+        </div>
+        <div style="margin-bottom:10px">
+            <input id="detail_fm_teacherName" name="teacherName" class="easyui-textbox" required="true" label="指导老师:"
+                   style="width:100%" disabled="true">
+        </div>
+        <div style="margin-bottom:10px">
+            <input id="detail_fm_telephone" name="telephone" class="easyui-textbox easyui-validatebox" required="true"
+                   label="指导老师移动电话:" data-options="validType:'mobileAndTel'" style="width:100%" disabled="true">
+        </div>
+        <div style="margin-bottom:10px">
+            <input id="detail_fm_guideTrain" name="guideTrain" class="easyui-textbox" required="true" label="指导与培训体系:"
+                   style="width:100%;" data-options="multiline:true" disabled="true">
+        </div>
+        <div style="margin-bottom:10px">
+            <input id="detail_fm_officeName" name="officeName" class="easyui-textbox" required="true" label="岗位科室名称:"
+                   style="width:100%" disabled="true">
+        </div>
+        <div style="margin-bottom:10px">
+            <input id="detail_fm_type" name="type" class="easyui-textbox" required="true" label="岗位类型:" style="width:100%"
+                   disabled="true">
+        </div>
+        <div style="margin-bottom:10px">
+            <input id="detail_fm_jobNum" name="jobNum" class="easyui-textbox easyui-validatebox" required="true" label="岗位数:"
+                   type="number" data-options="validType:'number'" style="width:100%" disabled="true">
+        </div>
+        <div style="margin-bottom:10px">
+            <input id="detail_fm_jobWork" name="jobWork" class="easyui-textbox" type="number" required="true" label="岗位工作量:"
+                   style="width:78%;display: inline-block;" placeholder="请输入岗位工作量" disabled="true">
+            <p style="width: 20%;display: inline-block;">学时/人/月</p>
+        </div>
+
+        <div style="margin-bottom:10px">
+            <input id="detail_fm_responsibility" name="responsibility" class="easyui-textbox" required="true" label="岗位职责:"
+                   style="width:100%;" data-options="multiline:true" disabled="true">
+        </div>
+        <div style="margin-bottom:10px">
+            <input id="detail_fm_ability" name="ability" class="easyui-textbox" required="true" label="培养的综合素质:"
+                   style="width:100%;" data-options="multiline:true" disabled="true">
+        </div>
+    </form>
+</div>
+<div id="detail-buttons">
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="closeDlg()"
+       style="width:90px">确定</a>
+</div>
+</body>
+</html>

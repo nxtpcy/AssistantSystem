@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Row Editing in DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/demo.css">
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <style>
+    #dlg span {
+        width: 27%;
+    }
+    
+    .dlg-span {
+        width: 27%;
+        display: inline-block;
+        height: 25px;
+        line-height: 25px;
+    }
+    
+    .dlg-select {
+        /*margin-left: 80px;*/
+        display: inline-block;
+        width: 70.79%;
+        height: 25px;
+        /*line-height: 25px;*/
+    }
+    </style>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="./js/common/common.js"></script>
+    <script type="text/javascript" src="./js/common/url.js"></script>
+    <script type="text/javascript" src="./js/common/loader.js"></script>
+    <script type="text/javascript" src='./js/modules/completeInfo.js'></script>
+    <script type="text/javascript">
+    var url;
+    var editIndex = undefined;
+    var rows = [];
+    var maxJe = 0;
+    var deptId = localStorage.deptId;
+    var count = 0;
+    var needCompleteStatus = 0;
+    //判断是否是管理员
+    if (deptId) {
+        var isAdmin = 0;
+    } else {
+        var isAdmin = 1;
+    }
+    //助管查询
+    function doSearch() {
+        if (deptId) {
+            $('#dg').datagrid('load', {
+                stuId: $('#stuId').val(), //用户名
+                name: $('#name').val(), //用户名
+                bankName: $('#bankName').val(),
+                deptId: deptId,
+            });
+        } else {
+            var val = $('#dept').combobox('getValues');
+            var deptIds = val.join(',')
+            $('#dg').datagrid('load', {
+                stuId: $('#stuId').val(), //用户名
+                name: $('#name').val(), //用户名
+                bankName: $('#bankName').val(),
+                deptId: deptIds,
+            });
+        }
+        $('#cc').combobox('clear');
+    }
+
+    function getJe() {
+        $.ajax({
+            type: 'post',
+            url: je_url.get,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(data) {
+                if (data.status == 1) {
+                    maxJe = data.body.je;
+                    console.log(data.body) // used the data.rows array to fill 
+                } else {
+                    success(data);
+                }
+            },
+            error: function() {
+                error.apply(this, arguments);
+            }
+        });
+    }
+
+
+    function setHelpDate(n) {
+        var date_rows = $('#dg').datagrid("getRows");
+
+        $.each(date_rows, function(i, val) {
+            // $('#dg').datagrid("reload");
+
+            val.helpDate = n;
+            $('#dg').datagrid('refreshRow', i);
+
+            // $('#dg').datagrid("refresh")
+        })
+    }
+
+    function validateJe(money) {
+        if (money > maxJe) {
+            $.messager.alert('金额数目不得大于' + maxJe);
+
+            // alert('金额数目不得大于' + maxJe)
+            return false
+        }
+
+    }
+
+    function endEditing() {
+        if (editIndex == undefined) {
+            return true
+        }
+        if ($('#dg').datagrid('validateRow', editIndex)) {
+            // editIndex
+            var ed = $('#dg').datagrid('getEditor', {
+                index: editIndex,
+                field: 'money'
+            });
+            console.log(ed);
+
+            $(ed.target).disabled = true;
+            console.log(ed);
+            console.log(editIndex);
+            console.log($(ed.target))
+            var row = $('#dg').datagrid('getRows')[editIndex];
+            // if (!validateJe(row.money)) {
+            //     return false
+            // };
+
+            if (rows.length == 0) {
+                rows.push(row)
+            } else {
+                var newitem = 1;
+                $.each(rows, function(i, val) {
+                    console.log(val)
+                    if (val.id == row.id) {
+                        //如果找到相同id，说明是旧的
+                        console.log('olditem')
+                        val.money = row.money;
+                        newitem = 0;
+                    }
+                })
+                if (newitem == 1) {
+                    rows.push(row)
+
+                }
+            }
+
+            $('#dg').datagrid('endEdit', editIndex);
+            // console.log(row)
+            editIndex = undefined;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function onClickRow(index) {
+        if (editIndex != index) {
+            if (endEditing()) {
+                $('#dg').datagrid('selectRow', index)
+                    .datagrid('beginEdit', index);
+
+                editIndex = index;
+                var row = $('#dg').datagrid('getRows')[editIndex];
+                if (!row.helpDate) {
+                    $.messager.alert('Warning', "请先设置年月");
+                    // alert("请先设置年月")
+                    reject();
+                }
+
+                console.log(row);
+            } else {
+                $('#dg').datagrid('selectRow', editIndex);
+            }
+        }
+    }
+
+    function accept() {
+        if (endEditing()) {
+            // $.messager.show({ 
+            //     title: 'success',
+            //     msg: '表格数据变动已记录，如确认，请点击保存'
+            // });
+            $('#dg').datagrid('acceptChanges');
+        }
+    }
+
+    // function checkInfoComplete() {
+    //     if (localStorage.isComplete === 0) {
+    //         $.messager.alert('Warning', "请先完善个人信息之后再提交");
+    //         return false
+    //     }
+    //     return true;
+    // }
+
+    //添加编辑的数据
+    function addDatas() {
+
+        console.log(localStorage.isComplete); //查询用户信息是否完善
+        console.log(localStorage.needComleteInfo); //查询是否需要强制完善信息
+
+        //检测用户信息是否完善
+        var flag = checkInfoComplete(); //不完善且强制:false 完善或不强制：true
+
+        if (!flag) {
+            //flag==false,表示用户信息不完善，且系统要求完善
+            $.messager.alert('Warning', '请先完成个人信息后再提交');
+            return false;
+        }
+        accept();
+        console.log(rows)
+        $.each(rows, function(i, val) {
+            addBuzhu(val);
+        })
+        rows = [];
+
+
+    }
+
+    function addBuzhu(query) {
+        var data = {
+            helpDate: query.helpDate,
+            deptId: query.deptId,
+            stuId: query.stuId,
+            szlbdm: 10,
+            shztm: 1,
+            money: query.money
+        }
+        $.ajax({
+            type: "POST",
+            url: buzhu_url.addBuzhu,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(data),
+            dataType: "json",
+            xhrFields: {
+                withCredentials: true
+            },
+            crossDomain: true,
+            success: function(data) {
+                if (data.status == 1) {
+                    // $.messager.show({ // show error message
+                    //     title: 'success',
+                    //     msg: query.stuId + ":" + data.message
+                    // });
+                    $.messager.alert('Warning', query.stuId + ":" + data.message);
+
+                    $('#tt').datagrid('reload');
+                    $('#dg').datagrid('reload');
+                    $('#cc').combobox('clear');
+
+                    console.log(data);
+                } else {
+                    $('#dg').datagrid('reload');
+
+                    // $.messager.show({ // show error message
+                    //     title: 'Error',
+                    //     msg: query.stuId + ":" + data.message
+                    // });
+                    $.messager.alert('Warning', query.stuId + ":" + data.message);
+
+                    $('#cc').combobox('clear');
+
+                }
+
+            }
+        })
+    }
+
+    function reject() {
+        $('#dg').datagrid('rejectChanges');
+        $('#dg').datagrid('reload');
+        $('#cc').combobox('clear');
+        // $('#cc').combobox('setValue', '');
+        rows = [];
+        editIndex = undefined;
+    }
+
+    function getChanges() {
+        var rows = $('#dg').datagrid('getChanges');
+        $.messager.alert('Warning', rows.length + ' rows are changed!');
+
+        // alert(rows.length + ' rows are changed!');
+    }
+
+
+    function submit() {
+        //检测用户信息是否完善
+        var flag = checkInfoComplete(); //不完善且强制:false 完善或不强制：true
+        if (!flag) {
+            //flag==false,表示用户信息不完善，且系统要求完善
+            $.messager.alert('Warning', '请先完成个人信息后再提交');
+            return false;
+        }
+
+        // 提交已添加的数据
+        var submit_rows = $('#tt').datagrid('getSelections');
+        // var ids = '';
+        var ids = '';
+        if (submit_rows.length === 0) {
+            $.messager.alert('Warning', '请先选择一条数据');
+            return false;
+        }
+        $.each(submit_rows, function(i, val) {
+            console.log(val)
+            ids = val.id + ',' + ids
+        })
+        var newUrl = buzhu_url.submit + '?' + 'buzhuList=' + ids;
+        $.ajax({
+            type: "POST",
+            url: newUrl,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            xhrFields: {
+                withCredentials: true
+            },
+            crossDomain: true,
+            success: function(data) {
+                if (data.status == 1) {
+                    $.messager.alert('Warning', data.message);
+                    $('#tt').datagrid('reload'); // reload the user data
+                    $('#tt').datagrid('unselectAll');
+
+                } else {
+                    $.messager.alert('Warning', data.message);
+
+                }
+            }
+        })
+    }
+
+    function editBuzhu() {
+        var row = $('#tt').datagrid('getSelections');
+        if (row.length === 0) {
+            $.messager.alert('Warning', '请先选择一条记录');
+            return false;
+        }
+        $('#fm').form('clear');
+        var statusCode = row[0].statusCode;
+
+        if (statusCode === 0 || statusCode === 4) {
+            console.log(row);
+            if (row.length != 1) {
+                $.messager.alert('Warning', '只能选择一条记录');
+                return false;
+            }
+
+            if (row[0]) {
+                console.log(row[0]);
+                if (statusCode === 4) {
+                    $.messager.alert('Warning', '审核驳回数据经编辑后将变为未提交状态');
+
+                    // alert('审核驳回数据经编辑后将变为未提交状态');
+                }
+                $('#dlg').dialog('open').dialog('center').dialog('setTitle', '编辑审核信息');
+                $('#fm').form('clear');
+                $('#fm').form('load', row[0]);
+                //此处更改，按照ljd要求将其改成下拉框 $("#edit_date").textbox('readonly', true);
+
+                if (row[0].type == 0) {
+                    $("#edit_type").textbox('setValue', "正常发放");
+                    url = baseUrl + 'usr/buzhu/updateUnsubmittedBuzhuWithCheck.do'
+                } else {
+                    $("#edit_type").textbox('setValue', "补助发放");
+                    url = baseUrl + 'usr/buzhu/updateUnsubmittedBuzhuWithoutCheck.do'
+                }
+                edit_id = row[0].id;
+
+            } else {
+                $.messager.alert('Warning', '只能选择一条记录');
+            }
+        } else {
+            $.messager.alert('Warning', '只能修改未提交和驳回状态的记录');
+            return true
+        }
+    }
+
+    function saveBuzhu() {
+        var data = $("#fm").serializeObject();
+        data.statusCode = 0;
+        data.id = edit_id;
+        console.log(data)
+        if ($("#fm").form('validate')) {
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(result) {
+                    if (result.status == 1) {
+                        $('#dlg').dialog('close'); // close the dialog
+                        $('#tt').datagrid('reload'); // reload the user data
+                        $('#tt').datagrid('unselectAll');
+                        $.messager.alert('Warning', result.message);
+
+                    } else {
+                        $.messager.alert('Warning', result.message);
+                    }
+                }
+            })
+        } else {
+            $.messager.alert('Warning', '请确认表格中输入是否合法');
+        };
+    }
+    $(function() {
+        // checkInfoComplete();
+        // updateNeedComplete(0);
+        // needCompleteStatus = checkNeedComplete();
+        $('#tt').datagrid({
+            title: '待提交信息查看',
+            iconCls: 'icon-edit',
+            width: "100%",
+            height: "auto",
+            singleSelect: false,
+            idField: 'id',
+            url: buzhu_url.queryBuZhu,
+            pagination: true,
+            pageSize: 5,
+            pageList: [5, 10, 15, 20],
+            method: 'post',
+            queryParams: {
+                deptId: deptId,
+                type: 0,
+                admin: isAdmin,
+                statusCode: 0
+            },
+            columns: [
+                [{
+                    field: 'id',
+                    checkbox: true
+                }, {
+                    field: 'stuId',
+                    title: '学号',
+                    align: 'center',
+                    width: "9%"
+                }, {
+                    field: 'studentName',
+                    title: '姓名',
+                    align: 'center',
+                    width: "5%"
+                }, {
+                    field: 'deptName',
+                    title: '设岗学院/部门名称',
+                    width: "9%",
+                    align: 'center',
+                }, {
+                    field: 'officeName',
+                    title: '岗位科室',
+                    width: "5%",
+                    align: 'center',
+                }, {
+                    field: 'officeTypeName',
+                    title: '岗位类型',
+                    width: "5%",
+                    align: 'center',
+                }, {
+                    field: 'bankName',
+                    title: '银行',
+                    width: "5%",
+                    align: 'center',
+                }, {
+                    field: 'bankNo',
+                    title: '银行卡号',
+                    width: "10%",
+                    align: 'center',
+                }, {
+                    field: 'helpDate',
+                    title: '考核年月',
+                    align: 'center',
+                    width: "5%"
+                }, {
+                    field: 'money',
+                    title: '金额',
+                    align: 'center',
+                    width: "3%"
+                }, {
+                    field: 'remark',
+                    title: '备注',
+                    align: 'center',
+                    width: "5%"
+                }, {
+                    field: 'createTime',
+                    title: '保存时间',
+                    align: 'center',
+                    width: "9%",
+                    formatter: function(val, rec) {
+                        return getSmpFormatDateByLong(val, true)
+
+                    }
+                }, {
+                    field: 'modifyTime',
+                    title: '最后修改时间',
+                    align: 'center',
+                    width: "9%",
+                    formatter: function(val, rec) {
+                        return getSmpFormatDateByLong(val, true)
+
+                    }
+                }, {
+                    field: 'submitTime',
+                    title: '提交时间',
+                    align: 'center',
+                    width: "9%",
+                    formatter: function(val, rec) {
+                        return getSmpFormatDateByLong(val, true)
+
+                    }
+                }, {
+                    field: 'statusCodeName',
+                    title: '状态',
+                    width: "12%",
+                    align: 'center',
+                }]
+            ],
+            toolbar: '#toolbar',
+            onLoadError: function(XMLHttpRequest, textStatus, errorThrown) {
+                var tips = JSON.parse(XMLHttpRequest.responseText);
+                $.messager.alert('Warning', tips.message);
+            }
+        });
+
+        // var pg = $("#dg").datagrid("getPager");
+        // if (pg) {
+        //     $(pg).pagination({
+        //         onSelectPage: function(pageNumber, pageSize) {
+        //             $('#cc').combobox('clear');
+        //             return true;
+        //         }
+        //     });
+        // }
+
+        getJe();
+        $('#cc').combobox({
+            url: url_queryDate,
+            valueField: 'helpDate',
+            textField: 'helpDate',
+            method: 'get',
+            multiple: false,
+            loader: dateloader,
+            panelHeight: 'auto',
+            onChange: function(n, o) {
+                setHelpDate(n)
+            }
+        });
+        $('#dept').combobox({
+            url: url_queryDept,
+            valueField: 'deptId',
+            textField: 'deptName',
+            method: 'post',
+            multiple: true,
+            loader: cloader,
+            panelHeight: 200,
+            onChange: function(n, o) {
+                var len = n.length;
+                // console.log(len);
+                var last = n[len - 1];
+                var depts = $('#dept').combobox('getData');
+                var dept_arr = [];
+                console.log(depts.length);
+                $.each(depts, function(i, val) {
+                        dept_arr.push(val.deptId)
+                    })
+                    // dept_arr = dept_arr.slice(1)
+                if (len < depts.length) {
+                    var val = $('#dept').combobox('getValues');
+                    if (val[0] == '') {
+                        $('#dept').combobox('setValues', val.slice(1));
+                    } else {
+                        /*第一个不等于all*/
+                        if (len == depts.length - 1) {
+                            console.log('else');
+                            val.push('')
+                            $('#dept').combobox('setValues', val);
+                        }
+                    }
+                }
+                if (last == '') {
+                    /*全选*/
+                    console.log('last=');
+                    if (len < depts.length) {
+                        $('#dept').combobox('setValues', dept_arr);
+                        selectAll = true;
+                    }
+                }
+            },
+        })
+        if (deptId) {
+            $('#dept').combobox('setValue', deptId);
+            $('#dept').combobox('disable');
+        }
+        //获取是否需要完善用户信息
+        needCompleteStatus = checkNeedComplete();
+        console.log(needCompleteStatus);
+        console.log(localStorage.needComleteInfo);
+    });
+    </script>
+</head>
+
+<body>
+    <table id="dg" class="easyui-datagrid" title="Row Editing in DataGrid" style="width:100%;height:auto" data-options="
+                iconCls: 'icon-edit',
+                title: '申请补助信息',
+                singleSelect: true,
+                toolbar: '#tb',
+                url: url_queryZhuguan,
+                queryParams: {
+                deptId: deptId},
+                method: 'post',
+                onClickRow: onClickRow,
+                pagination: true,
+                pageSize: 5,
+                pageList: [5, 10, 15, 20],
+            ">
+        <thead>
+            <tr>
+                <!-- <th data-options="field:'checkbox',width:'5%',align:'center',editor:{type:'checkbox',options:{on:'P',off:''}}">选择</th> -->
+                <th data-options="field:'stuId',width:'15%',align:'center'">学号</th>
+                <th data-options="field:'name',width:'10%',align:'center'">姓名</th>
+                <th data-options="field:'deptName',width:'15%',align:'center'">设岗学院/部门名称</th>
+                <th data-options="field:'jobTime',width:'15%',align:'center'">聘期</th>
+                <th data-options="field:'bankName',width:'10%',align:'center'">银行名称</th>
+                <th data-options="field:'bankNo',width:'20%',align:'center'">银行卡号</th>
+                <th data-options="field:'helpDate',width:'10%'">考核年月</th>
+                <th data-options="field:'money',width:'5%',editor:{type:'numberbox',options:{required:true}}">金额</th>
+                <!-- <th data-options="field:'status',width:'5%',align:'center'">操作</th> -->
+            </tr>
+        </thead>
+    </table>
+    <div id="tb" style="height:auto">
+        <div id="ts" style="padding:3px">
+            <span>学号:</span>
+            <input id="stuId" style="line-height:26px;border:1px solid #ccc">
+            <span>姓名:</span>
+            <input id="name" style="line-height:26px;border:1px solid #ccc">
+            <span>银行名称:</span>
+            <input id="bankName" style="line-height:26px;border:1px solid #ccc">
+            <span>部门:</span>
+            <input id='dept' name='deptName' value="">
+            <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()">查询</a>
+        </div>
+        <div>
+            <span>年月:</span>
+            <input id="cc" name="dept" value="">
+            <!-- <input id="dd" name="helpDate" class="easyui-combobox" style="line-height:26px;border:1px solid #ccc"> -->
+        </div>
+        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-save',plain:true" onclick="addDatas()">保存</a>
+        <!-- <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-save',plain:true" onclick="accept()">接受</a> -->
+        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-undo',plain:true" onclick="reject()">取消</a>
+        <span style="font-size: 8px; color: red">提示：填写过程中，出现无法输入等问题请点取消按钮</span>
+    </div>
+    <div style="margin-top: 10px;padding-top: 10px">
+        <table id="tt"></table>
+        <div id="toolbar" style="height:auto">
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-save',plain:true" onclick="submit()">提交</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editBuzhu()">编辑</a>
+        </div>
+    </div>
+    <!-- 编辑补助对话框 -->
+    <div id="dlg" class="easyui-dialog" style="width:500px" closed="true" buttons="#dlg-buttons" data-options="draggable:false,modal:true">
+        <form id="fm" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">审核信息</div>
+            <div style="margin-bottom:10px">
+                <input id="edit_stuId" name="stuId" class="easyui-textbox" required="true" label="学号:" disabled="true" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="edit_name" name="studentName" class="easyui-textbox" required="true" label="姓名" disabled="true" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="edit_deptId" name="deptId" class="easyui-textbox" label="部门编号:" disabled="true" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="edit_bankName" name="bankName" class="easyui-textbox" label="银行" disabled="true" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="edit_bankNo" name="bankNo" class="easyui-textbox" label="银行卡号" disabled="true" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="edit_type" name="type" class="easyui-textbox" label="类型" disabled="true" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <!--按照ljd要求，将此处改为下拉框<input id="edit_date" name="helpDate" class="easyui-textbox" label="考核年月" style="width:100%">-->
+                <span class="dlg-span">
+                 考核年月：
+            </span>
+                <select class="dlg-select" id="edit_date" class="" name="helpDate">
+                    <option value="201712">201712</option>
+                    <option value="201710">201710</option>
+                    <option value="201704">201704</option>
+                    <option value="201701">201701</option>
+                    <option value="201612">201612</option>
+                    <option value="201611">201611</option>
+                </select>
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="edit_money" name="money" class="easyui-numberbox" label="申请金额" style="width:100%">
+            </div>
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveBuzhu()" style="width:90px">保存</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">取消</a>
+    </div>
+</body>
+
+</html>

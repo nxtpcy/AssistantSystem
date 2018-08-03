@@ -1,0 +1,653 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head id="Head1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>助管管理系统</title>
+    <link href="css/default.css" rel="stylesheet" type="text/css" />
+    <!--  <link rel="stylesheet" type="text/css" href="js/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="js/themes/icon.css" />
+    <script type="text/javascript" src="js/jquery-1.4.4.min.js"></script> -->
+    <!--  <script type="text/javascript" src="js/jquery.easyui.min.1.2.2.js"></script> -->
+    <!--  <script type="text/javascript" src="./jquery-easyui/easyui-lang-zh_CN.js"></script> -->
+    <!-- <script type="text/javascript" src="js/function/checkUser.js"></script> -->
+    <!--动态菜单的导入文件-->
+    <!-- [jQuery] -->
+    <script type="text/javascript" src="static/easyui/jquery.min.js" charset="utf-8"></script>
+    <!-- [EasyUI] -->
+    <link id="easyuiTheme" rel="stylesheet" type="text/css" href="static/easyui/themes/gray/easyui.css" />
+    <link id="easyuiTheme" rel="stylesheet" type="text/css" href="static/easyui/themes/icon.css" />
+    <script type="text/javascript" src="static/easyui/jquery.easyui.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="static/easyui/locale/easyui-lang-zh_CN.js" charset="utf-8"></script>
+    <!-- [扩展JS] -->
+    <script type="text/javascript" src="static/extJs.js" charset="utf-8"></script>
+    <!-- [扩展样式] -->
+    <link rel="stylesheet" type="text/css" href="static/style/css/dreamlu.css?v=10" />
+    <link rel="stylesheet" type="text/css" href="static/foundation-icons/foundation-icons.css" />
+    <!--必须有的文件-->
+    <script type="text/javascript" src='js/common/common.js'></script>
+    <script type="text/javascript" src="js/common/url.js"></script>
+    <script type="text/javascript" src="js/dist/md5.min.js"></script>
+    <script src="js/dist/base64.js"></script>
+    <script type="text/javascript" src='js/common/Reg.js'></script>
+    <!--   <script src="js/common/menuAll.js"></script> -->
+    <script type="text/javascript" src='js/outlook3.js'></script>
+    <!-- <script type="text/javascript" src='jsnew/common/checkUser.js'></script> -->
+    </script>
+    <script type="text/javascript" src='js/function/checkUser.js'></script>
+    <script type="text/javascript" src='js/modules/completeInfo.js'></script>
+    <script type="text/javascript" src="js/common/validate-extend.js"></script>
+
+    <script type="text/javascript">
+    // checkUser();
+    var _menu;
+
+    var index_tabs;
+    var layout_west_tree;
+    var indexTabsMenu;
+
+    //设置修改密码窗口
+    function openPwd() {
+        $('#w').window({
+            title: '修改密码',
+            width: 300,
+            modal: true,
+            shadow: true,
+            closed: true,
+            height: 200,
+            resizable: false
+        });
+        // $('#role').combobox(height,'auto')
+        // $('#w').window('open');
+    }
+    //关闭修改密码窗口
+    function closePwd() {
+        $('#w').window('close');
+    }
+
+
+    //设置用户登录窗口
+    function openLogin() {
+        $('#login').window({
+            title: '用户登录',
+            width: 300,
+            modal: true,
+            shadow: true,
+            closed: true,
+            height: 200,
+            resizable: false
+        });
+        $('#login').window('open');
+    }
+    //关闭用户登录窗口
+    function closeLogin() {
+        $('#login').window('close');
+    }
+
+    function doLogin() {
+        var user = {
+            "LoginName": $('#LoginName').val(),
+            "pwd": btoa(md5($('#pwd').val())),
+            // "role": $('#role').val()
+            "role": $('#role').combobox('getValue')
+        }
+        $.ajax({
+            type: "POST",
+            url: baseUrl + 'usr/user/shiroLogin.do' + "?loginName=" + user.LoginName + "&password=" + user.pwd + "&role=" + user.role,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+            },
+            crossDomain: true,
+            success: function(result) {
+                if (result.status == 1) {
+                    // alert(result.message);
+                    console.log(result.message);
+                    $('#login').window('close');
+                    //console.log("");
+                    //用户登录后检查登录状态
+                    init();
+                } else {
+                    //console.log(result.message);
+                }
+
+            }
+        });
+    }
+    //修改密码
+    function serverLogin() {
+        var $newpass = $('#txtNewPass');
+        var $rePass = $('#txtRePass');
+        var $originPwd = $('#originPwd')
+        if ($originPwd.val() == '') {
+            msgShow('系统提示', '请输入原始密码！', 'warning');
+            return false;
+        }
+        if ($newpass.val() == '') {
+            msgShow('系统提示', '请输入密码！', 'warning');
+            return false;
+        }
+        if ($rePass.val() == '') {
+            msgShow('系统提示', '请再一次输入密码！', 'warning');
+            return false;
+        }
+
+        if ($newpass.val() != $rePass.val()) {
+            msgShow('系统提示', '两次密码不一至！请重新输入', 'warning');
+            return false;
+        }
+        var data = {
+            "loginName": localStorage.loginName,
+            "originPwd": btoa(md5(($originPwd.val()))),
+            "firstPwd": btoa(md5(($newpass.val()))),
+            "secondPwd": btoa(md5($rePass.val()))
+        }
+        if(localStorage.role==3){
+            var changPwdURL=baseUrl + 'student/user/changePwd.do'
+            data.loginName=sessionStorage.getItem('stuId')
+        }else{
+            var changPwdURL= baseUrl + 'usr/user/changePwd.do'
+        }
+        $.ajax({
+            type: "POST",
+            url: changPwdURL,
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(result) {
+                if (result.status == 1) {
+                    // alert(result.message);
+                    $newpass.val('');
+                    $rePass.val('');
+                    msgShow('系统提示', '恭喜，密码修改成功！');
+                    closePwd();
+                } else {
+                    alert(result.message);
+                }
+
+            }
+        });
+    }
+    //管理员日志生成
+    function appendLog() {
+        var html = ''
+        var query = {
+            "rows": 20,
+            "page": 1,
+        }
+        $.ajax({
+            type: 'POST',
+            async: false,
+            url: baseUrl + 'usr/developlog/list.do',
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+            data: JSON.stringify(query),
+            dataType: 'json',
+            success: function(data) {
+                console.log(data.rows);
+                var count=0;
+                $.each(data.rows, function(i, val) {
+                    var date = getSmpFormatDateByLong(val.logDate, true)
+                    if(count<10){
+                        html += '<p>【' + date + '】更新说明：  修改内容:' + val.logDesc + ';</p>';
+                        count+=1;
+                    }else{
+                        count+=1;
+                    }
+                })
+                html += ' <p><hr>更新说明：如果没有正常显示，请清除缓存(ctrl+F5)</p>'
+                console.log(html);
+                $('#adminLog').append(html);
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrowna) {
+                // console.log(data);
+                // $.messager.alert('Warning', XMLHttpRequest.readyState + XMLHttpRequest.status + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    function checkStatus2(argument) {
+        $.ajax({
+            type: "GET",
+            url: baseUrl + "usr/user/getUserStatus.do",
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+            },
+            crossDomain: true,
+            async: false,
+            success: function(result) {
+                if (result) {
+                    if (result.status == 1) {
+                        var role = result.body.role;
+                        if (role == 0) {
+                            //admin
+                            _menus = test_menus;
+                        } else if (role == 1) {
+                            //部门管理员
+                            _menus = teacher_menus;
+                            //设置本地全局变量deptID
+                            localStorage.deptId = result.body.deptId;
+                        }
+                        console.log(result.body)
+                        localStorage.loginName = result.body.loginName;
+                        localStorage.role = result.body.role;
+                        localStorage.stuId=result.body.stuId;
+                    } else {
+                        // 如果用户为空就打开登录界面
+                        window.location.href = './login.html';
+                        // openLogin();
+
+                        // _menus = admin_menus;
+                        /*这里几行是测试用的*/
+                        _menus = test_menus;
+                        // InitLeftMenu(_menus);
+                        return false;
+                    }
+                } else {
+                    window.location.href = './login.html';
+                }
+            },
+            error: function(message) {
+                $.messager.alert(message);
+            }
+        });
+    }
+    //关闭完善信息窗口 
+    function closeInfo() {
+        $('#userInfo').window('close');
+    }
+
+    function init() {
+        //test
+        // _menus = test_menus;
+        // InitLeftMenu(_menus);
+        var role = localStorage.role;
+
+        if (role == 0) {
+            //admin
+            localStorage.deptId = "";
+            tree();
+        } else if (role == 1) {
+            //部门管理员      
+            //设置本地全局变量deptID
+            localStorage.deptId = localStorage.deptId;
+            tree();
+        } else if (role == 2) {
+            $.ajax({
+            type: "GET",
+            url: baseUrl + "usr/user/getUserStatus.do",
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+            },
+            crossDomain: true,
+            async: false,
+            success: function(result) {
+                if (result) {
+                     localStorage.stuId=result.body.stuId;
+                }
+            }
+        })
+            console.log(localStorage.stuId)
+            //助管
+            $('#doCompleteInfo').css('display', 'none')
+                //设置本地全局变量deptID
+            localStorage.deptId = localStorage.deptId;
+            localStorage.stuId = localStorage.stuId;
+            $.ajax({
+                type: 'POST',
+                url: baseUrl + 'ques/getAllQuesToAstStu.do?stuId=' + localStorage.stuId,
+                dataType: "json",
+                async: false,
+                success: function(data) {
+                    console.log(data)
+                    if (data.status != -1) {
+                        if (confirm("你有一份问卷需要填写，是否前往问卷？")) {
+                            //直接使用window.open()方法打开新窗口会被浏览器拦截
+                            var aa = window.open();
+                            setTimeout(function() {
+                                aa.location = ques;
+                            }, 100);
+                        }
+                    }
+                }
+            })
+            tree();
+        } else if (role == 3) {
+            //研究生
+            $('#doCompleteInfo').css('display', 'none')
+                //设置本地全局变量deptID
+            localStorage.deptId = localStorage.deptId;
+            tree();
+        } else {
+            $.messager.alert('Warning', "用户角色初始化错误，请重新登录");
+            window.location.href = './login.html';
+        }
+        $('#username')[0].innerHTML = localStorage.loginName;
+        //InitLeftMenu(_menus);
+
+    }
+
+    function checkStatus() {
+        if (!localStorage.loginName) {
+            alert("请先登录")
+            window.location.href = './login.html';
+        }
+    }
+    
+    //修改用户信息
+    function completeIntfo(argument) {
+        if ($('#teacherName').val() === "" || $('#teacherPhone').val() === "") {
+            alert('请确认表单输入完整');
+            return false;
+        }
+        console.log(localStorage.id);
+
+        var query = {
+            id: localStorage.id,
+            teacherName: $('#teacherName').val(),
+            teacherPhone: $('#teacherPhone').val(),
+            teacherEmail: $('#teacherEmail').val(),
+        }
+        if (!Reg.check($('#teacherEmail').val(), 'email')) {
+            msgShow('系统提示', '邮箱格式输入不合法');
+            return false;
+
+        }
+        if (!Reg.check($('#teacherPhone').val(), 'tel')) {
+            msgShow('系统提示', '电话号码输入不合法');
+            return false;
+
+        }
+        if (!Reg.check($('#teacherName').val(), 'CHS')) {
+            msgShow('系统提示', '指导老师姓名输入不合法：请输入中文');
+            return false;
+
+        }
+        // query.id=1;
+        $.ajax({
+            type: "POST",
+            data: JSON.stringify(query),
+            url: baseUrl + "usr/user/updateInfo.do",
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+            },
+            crossDomain: true,
+            async: false,
+            success: function(result) {
+                if (result.status == 1) {
+                    msgShow('系统提示', result.message);
+                    getStatus();
+                    // sessionStorage.setItem('teacherName', $('#teacherName').val());
+                    // sessionStorage.setItem('teacherPhone', $('#teacherPhone').val());
+                    // sessionStorage.setItem('teacherEmail', $('#teacherEmail').val());
+                    closeInfo();
+                    localStorage.isComplete = 1;
+                } else {
+                    msgShow('系统提示', result.message);
+                }
+            },
+            error: function(message) {
+                alert(message);
+            }
+        });
+    }
+    //获取用户信息
+    getStatus();
+    //检查用户状态，在dom加载之前
+    checkStatus();
+
+    $(function() {
+        init();
+        // closeLogin()
+        openPwd();
+        /*初始化用户日志*/
+        console.log(localStorage.role);
+        if (parseInt(localStorage.role) === 0) {
+            appendLog()
+
+        }
+
+        /*检测浏览器*/
+        if (window.localStorage) {
+            // checkUser();
+            // alert('This browser supports localStorage');
+        } else {
+            alert('该浏览器版本较低，为了更好的使用，请更换浏览器再试！');
+        }
+
+        $('#userInfo').window('close');
+
+        $('#doCompleteInfo').click(function() {
+            $('#userInfo').window('open');
+            if (sessionStorage.getItem('teacherName') !== "undefined") {
+                // $('#teacherName').val(sessionStorage.getItem('teacherName'))
+                $('#teacherName').textbox('setValue',sessionStorage.getItem('teacherName'))
+
+            } else {
+                $('#teacherName').val("")
+            }
+            if (sessionStorage.getItem('teacherPhone') !== "undefined") {
+                $('#teacherPhone').textbox('setValue',sessionStorage.getItem('teacherPhone'))
+            } else {
+                $('#teacherPhone').val("")
+            }
+            if (sessionStorage.getItem('teacherEmail') !== "undefined") {
+                // console.log(sessionStorage.getItem('teacherEmail'));
+                $('#teacherEmail').textbox('setValue',sessionStorage.getItem('teacherEmail'))
+            } else {
+                $('#teacherEmail').val("")
+            }
+
+        });
+
+        if (!checkInfoComplete()) {
+            //用户信息不完善，且要求完善
+            $.messager.alert('Warning', "用户信息不完善，请完善信息");
+            // $('#userInfo').window('open');
+        }
+
+        $('#info_btnEp').click(function() {
+            completeIntfo();
+        })
+
+
+        $('#editpass').click(function() {
+            $('#w').window('open');
+        });
+
+        $('#btnEp').click(function() {
+            console.log("hello")
+            serverLogin();
+        })
+        $('#btnlogin').click(function() {
+            console.log("hello")
+            doLogin();
+        })
+        $('#btnLoginCancel').click(function() {
+            // if(checkUser)
+            closeLogin()
+        })
+        $('#info_btnCancel').click(function() {
+            closeInfo();
+        })
+        $('#btnCancel').click(function() {
+            closePwd();
+        })
+
+        $('#loginOut').click(function() {
+            $.messager.confirm('系统提示', '您确定要退出本次登录吗?', function(r) {
+
+                if (r) {
+                    $.ajax({
+                        type: "POST",
+                        url: baseUrl + "/usr/user/shiroLogout.do",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        crossDomain: true,
+                        success: function(result) {
+                            if (result.status == 1) {
+                                // console.log(document.cookie)
+                                localStorage.deptId = '';
+                                localStorage.loginName = '';
+                                _menus = '';
+                                window.location.href = './login.html';
+                            } else {
+                                $.messager.alert('Warning', result.message);
+                            }
+
+                        }
+                    });
+                }
+            });
+        })
+
+
+
+    });
+    </script>
+</head>
+
+<body class="easyui-layout" style="overflow-y: hidden" scroll="no">
+    <noscript>
+        <div style=" position:absolute; z-index:100000; height:2046px;top:0px;left:0px; width:100%; background:white; text-align:center;">
+            <img src="images/noscript.gif" alt='抱歉，请开启脚本支持！' />
+        </div>
+    </noscript>
+    <div region="north" split="true" border="false" style="overflow: hidden; height: 50px;
+        background: url(images/layout-browser-hd-bg.gif) #7f99be repeat-x center 50%;
+        line-height: 30px;color: #fff; font-family: Verdana, 微软雅黑,黑体">
+        <span style="float:right; padding-right:20px;font-size: 14px; padding-top:10px;" class="head">欢迎 <span id="username" style="font-size: 14px; padding-top:10px;"></span> <a href="#" id="editpass" style="font-size: 14px; padding-top:10px;">修改密码</a>
+        <a href="#" id="doCompleteInfo" style="font-size: 14px; padding-top:10px;padding-right: 10px">完善个人信息 </a><a href="#" id="loginOut" style="font-size: 14px; padding-top:10px;">安全退出</a>
+        <!-- <a href="./index.html" style="font-size: 14px; padding-top:10px;">返回主页</a></span> -->
+        <span style="padding-left:10px; font-size: 18px;padding-top:5px;"><img src="images/blocks.gif" width="30" height="30" align="absmiddle" /> <a style="color: #fff; font-size: 18px;padding-top:5px;" href="./index.html">助管管理系统</a></span>
+    </div>
+    <div region="south" split="true" style="height: 30px; background: #D2E0F2; ">
+        <div class="footer">Copyright&copy; hahatwo 2017-2018 开发者：hahatwo</div>
+    </div>
+    <!--导航内容-->
+    <div data-options="region:'west',split:true" title="导航菜单" style="width:180px;" id="west" style="width: 160px; overflow: hidden; overflow-y: auto; padding: 0px">
+        <div class="well well-small" style="padding: 5px 5px 5px 5px;">
+            <ul id="layout_west_tree"></ul>
+        </div>
+    </div>
+    <div data-options="region:'center'" id="mainPanle" region="center" style="background: #eee; overflow-y:hidden">
+        <div id="index_tabs" style="overflow: hidden;">
+            <div title="欢迎使用" data-options="iconCls:'fi-home',border:false" style="padding:20px;overflow:hidden; color:red; ">
+                <div id="adminLog" title="欢迎使用" style="padding:20px;overflow:hidden; color:red; ">
+                    <h1 style="font-size:24px;">*助管管理系统</h1>
+                </div>
+                <style>
+                .pro_name a {
+                    color: #4183c4;
+                }
+                
+                .osc_git_title {
+                    background-color: #d8e5f1;
+                }
+                
+                .osc_git_box {
+                    background-color: #fafafa;
+                }
+                
+                .osc_git_box {
+                    border-color: #ddd;
+                }
+                
+                .osc_git_info {
+                    color: #666;
+                }
+                
+                .osc_git_main a {
+                    color: #4183c4;
+                }
+                </style>
+            </div>
+        </div>
+    </div>
+    <!--修改密码窗口-->
+    <div id="w" class="easyui-window" title="修改密码" collapsible="false" minimizable="false" maximizable="false" icon="icon-save" style="width: 300px; height: 150px; padding: 5px;
+        background: #fafafa;">
+        <div class="easyui-layout" fit="true">
+            <div region="center" border="false" style="padding: 10px; background: #fff; border: 1px solid #ccc;">
+                <table cellpadding=3>
+                    <tr>
+                        <td>原始密码：</td>
+                        <td>
+                            <input id="originPwd" type="Password" class="txt01" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>新密码：</td>
+                        <td>
+                            <input id="txtNewPass" type="Password" class="txt01" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>确认密码：</td>
+                        <td>
+                            <input id="txtRePass" type="Password" class="txt01" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div region="south" border="false" style="text-align: right; height: 30px; line-height: 30px;">
+                <a id="btnEp" class="easyui-linkbutton" icon="icon-ok" href="javascript:void(0)">
+                    确定</a> <a id="btnCancel" class="easyui-linkbutton" icon="icon-cancel" href="javascript:void(0)">取消</a>
+            </div>
+        </div>
+    </div>
+    <!--完善用户信息窗口-->
+    <div id="userInfo" class="easyui-window" title="完善用户信息" modal="true" shadow="true" collapsible="false" resizable="false" minimizable="false" maximizable="false" icon="icon-save" style="width: 320px; height: 180px; padding: 5px;
+        background: #fafafa;">
+        <div class="easyui-layout" fit="true">
+            <div region="center" border="false" style="padding: 10px; background: #fff; border: 1px solid #ccc;">
+                <table cellpadding=3>
+                    <tr>
+                        <td>指导老师姓名：</td>
+                        <td>
+                            <!-- <input id="teacherName" type="text" class="txt01" /> -->
+                             <input id="teacherName" name="text" class="easyui-textbox easyui-validatebox" data-options="validType:'CHS'" style="width:100%">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>指导老师电话：</td>
+                        <td>
+                        <input id="teacherPhone" name="telephone" class="easyui-textbox easyui-validatebox" data-options="validType:'mobile'" label="电话号码" style="width:100%">
+                            <!-- <input id="teacherPhone" type="text" class="txt01" /> -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>邮箱：</td>
+                        <td>
+                        <input id="teacherEmail" name="email" class="easyui-textbox easyui-validatebox" data-options="validType:'email'" label="邮箱" style="width:100%">
+                            <!-- <input id="teacherEmail" type="text" class="txt01" /> -->
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div region="south" border="false" style="text-align: right; height: 30px; line-height: 30px;">
+                <a id="info_btnEp" class="easyui-linkbutton" icon="icon-ok" href="javascript:void(0)">
+                    确定</a> <a id="info_btnCancel" class="easyui-linkbutton" icon="icon-cancel" href="javascript:void(0)">取消</a>
+            </div>
+        </div>
+    </div>
+    <div id="tabsMenu">
+        <div data-options="iconCls:'fi-loop'" type="refresh" style="font-size: 12px;">刷新</div>
+        <div class="menu-sep"></div>
+        <div data-options="iconCls:'fi-x'" type="close" style="font-size: 12px;">关闭</div>
+        <div data-options="iconCls:''" type="closeOther">关闭其他</div>
+        <div data-options="iconCls:''" type="closeAll">关闭所有</div>
+    </div>
+</body>
+
+</html>

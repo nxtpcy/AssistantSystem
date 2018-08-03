@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Row Editing in DataGrid - jQuery EasyUI Demo</title>
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/themes/color.css">
+    <link rel="stylesheet" type="text/css" href="./jquery-easyui/demo.css">
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="./jquery-easyui/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="./js/common/common.js"></script>
+    <script type="text/javascript" src="./js/common/url.js"></script>
+    <script type="text/javascript" src="./js/common/loader.js"></script>
+    <script type="text/javascript" src='./js/common/month.js'></script>
+    <script type="text/javascript ">
+    var url;
+    var edit_id;
+    var deptId = localStorage.deptId;
+    if (deptId) {
+        var isAdmin = 0;
+    } else {
+        var isAdmin = 1;
+    }
+
+    function doSearch() {
+        if (deptId) {
+            $('#tt').datagrid('load', {
+                statusCode: $('#statusCode').combobox('getValue'),
+                type: $('#type').combobox('getValue'),
+                helpDate: $('#helpDate').datebox('getValue'),
+                deptId: deptId,
+                admin: isAdmin
+            });
+        } else {
+            var val = $('#dept').combobox('getValues');
+            var deptIds = val.join(',')
+                // console.log(deptIds);
+            $('#tt').datagrid('load', {
+                statusCode: $('#statusCode').combobox('getValue'),
+                type: $('#type').combobox('getValue'),
+                helpDate: $('#helpDate').datebox('getValue'),
+                deptId: deptIds,
+                admin: isAdmin,
+                officeType: $('#officeType').combobox('getValue'),
+                studentName: $('#studentName').val(),
+                studentId: $('#studentId').val(),
+                officeName: $('#officeName').val()
+            });
+        }
+        $('#tt').datagrid('unselectAll');
+
+    }
+
+    function withdraw() {
+        var rows = $('#tt').datagrid('getSelections');
+        var statusCode = $('#statusCode').combobox('getValue');
+
+        if (rows.length === 0) {
+            $.messager.alert('Warning', '请先选择一条记录');
+            return false;
+        }
+        var statusCode = rows[0].statusCode;
+        var ids = '';
+        var flag = true;
+        $.each(rows, function(i, val) {
+            if (val.statusCode != 1) {
+
+                flag = false;
+            }
+            ids = val.id + ',' + ids
+        })
+        var newUrl = baseUrl + 'usr/buzhu/withdraw.do' + "?buzhuList=" + ids
+
+        if (flag) {
+            $.ajax({
+                type: "POST",
+                url: newUrl,
+                // data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(result) {
+                    if (result.status == 1) {
+                        $.messager.alert('Warning', result.message);
+                        $('#dlg').dialog('close'); // close the dialog
+                        $('#tt').datagrid('reload'); // reload the user data
+                    } else {
+                        $.messager.alert('Warning', result.message);
+
+                    }
+                }
+            })
+        } else {
+            $.messager.alert('Warning', '只能撤回审核中的记录');
+        }
+
+    }
+
+
+    function editBuzhu() {
+        var row = $('#tt').datagrid('getSelections');
+        if (row.length === 0) {
+            $.messager.alert('Warning', '请先选择一条记录');
+            return false;
+        }
+        var statusCode = row[0].statusCode;
+        $('#fm').form('clear');
+        if (statusCode === 0 || statusCode === 4) {
+            console.log(row);
+            if (row.length != 1) {
+                alert("只能选择一条数据");
+                return false;
+            }
+
+            if (row[0]) {
+                if (statusCode === 4) {
+                    $.messager.alert('Warning', '审核驳回数据经编辑后将变为未提交状态');
+                }
+                $('#dlg').dialog('open').dialog('center').dialog('setTitle', '编辑审核信息');
+                $('#fm').form('clear');
+                $('#fm').form('load', row[0]);
+                $("#edit_date").textbox('readonly', true);
+
+                if (row[0].type == 0) {
+                    $("#edit_type").textbox('setValue', "正常发放");
+                    url = baseUrl + 'usr/buzhu/updateUnsubmittedBuzhuWithCheck.do'
+                } else {
+                    $("#edit_type").textbox('setValue', "历史补助");
+                    url = baseUrl + 'usr/buzhu/updateUnsubmittedBuzhuWithoutCheck.do'
+                }
+                edit_id = row[0].id;
+                // $('#edit_type').combobox('setValue', '0')
+
+            } else {
+                $.messager.alert('Warning', '请先选择一条记录');
+            }
+        } else {
+            $.messager.alert('Warning', '只能修改未提交和驳回的记录');
+            return true
+        }
+
+    }
+
+    function saveBuzhu() {
+        var data = $("#fm").serializeObject();
+        data.statusCode = 0;
+        data.id = edit_id;
+        if ($("#fm").form('validate')) {
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function(result) {
+                    if (result.status == 1) {
+                        $.messager.alert('Warning', result.message);
+                        $('#dlg').dialog('close'); // close the dialog
+                        $('#tt').datagrid('reload'); // reload the user data
+                        $('#tt').datagrid('unselectAll');
+
+                    } else {
+                        $.messager.alert('Warning', result.message);
+                    }
+                }
+            })
+        };
+    }
+
+    function getExcelUrl(test) {
+        console.log(test);
+        var statusCode = $('#statusCode').combobox('getValue'),
+            type = $('#type').combobox('getValue'),
+            helpDate = $('#helpDate').datebox('getValue')
+        if (deptId) {
+            var url = baseUrl + 'xls/zg_xls_download_teacher.do?helpDate=' + helpDate + "&statusCode=" + statusCode + "&type=" + type + "&deptId=" + deptId;
+
+        } else {
+            var url = baseUrl + 'xls/zg_xls_download_teacher.do?helpDate=' + helpDate + "&statusCode=" + statusCode + "&type=" + type
+        }
+
+        $('#url').attr('href', url)
+    }
+    $(function() {
+        $('#tt').datagrid({
+            title: '审核状态查看',
+            iconCls: 'icon-edit',
+            width: "100%",
+            rownumbers: true,
+            height: "auto",
+            fit: true,
+            singleSelect: false,
+            idField: 'id',
+            url: buzhu_url.queryBuZhu,
+            pagination: true,
+            // pageSize: 5,
+            // pageList: [5, 10, 15, 20],
+            pageSize: 30,
+            pageList: [5, 10, 15, 20, 25, 30],
+            method: 'post',
+            queryParams: {
+                deptId: deptId,
+                statusCode: 2,
+                type: 0,
+                admin: isAdmin,
+            },
+            columns: [
+                [{
+                    field: 'stuId',
+                    title: '学号',
+                    align: 'center',
+                    width: "9%"
+                }, {
+                    field: 'studentName',
+                    title: '姓名',
+                    align: 'center',
+                    width: "5%"
+                }, {
+                    field: 'deptName',
+                    title: '设岗学院/部门名称',
+                    width: "9%",
+                    align: 'center',
+                }, {
+                    field: 'officeName',
+                    title: '岗位科室',
+                    width: "5%",
+                    align: 'center',
+                }, {
+                    field: 'officeTypeName',
+                    title: '岗位类型',
+                    width: "5%",
+                    align: 'center',
+                },{
+                    field: 'jobTime',
+                    title: '聘期',
+                    width: "5%",
+                    align: 'center',
+                }, {
+                    field: 'bankName',
+                    title: '银行',
+                    width: "5%",
+                    align: 'center',
+                }, {
+                    field: 'bankNo',
+                    title: '银行卡号',
+                    width: "10%",
+                    align: 'center',
+                }, {
+                    field: 'helpDate',
+                    title: '考核年月',
+                    align: 'center',
+                    width: "5%"
+                }, {
+                    field: 'money',
+                    title: '金额',
+                    align: 'center',
+                    width: "3%"
+                }, {
+                    field: 'remark',
+                    title: '备注',
+                    align: 'center',
+                    width: "5%"
+                }, {
+                    field: 'createTime',
+                    title: '保存时间',
+                    align: 'center',
+                    width: "10%",
+                    formatter: function(val, rec) {
+                        return getSmpFormatDateByLong(val, true)
+
+                    }
+                }, {
+                    field: 'modifyTime',
+                    title: '最后修改时间',
+                    align: 'center',
+                    width: "10%",
+                    formatter: function(val, rec) {
+                        return getSmpFormatDateByLong(val, true)
+
+                    }
+                }, {
+                    field: 'submitTime',
+                    title: '提交时间',
+                    align: 'center',
+                    width: "10%",
+                    formatter: function(val, rec) {
+                        return getSmpFormatDateByLong(val, true)
+
+                    }
+                }, {
+                    field: 'statusCodeName',
+                    title: '状态',
+                    width: "7%",
+                    align: 'center',
+                }]
+            ],
+            toolbar: '#toolbar',
+            onLoadError: function(XMLHttpRequest, textStatus, errorThrown) {
+                var tips = JSON.parse(XMLHttpRequest.responseText);
+                $.messager.alert('Warning', tips.message);
+            }
+        });
+
+        $('#cc').combobox({
+                url: url_queryDept,
+                valueField: 'deptId',
+                textField: 'deptName',
+                method: 'post',
+                multiple: true,
+                loader: cloader,
+                panelHeight: 200,
+
+            })
+            // $('#edit_date').combobox({
+            //     url: url_queryDate,
+            //     valueField: 'helpDate',
+            //     textField: 'helpDate',
+            //     method: 'get',
+            //     multiple: false,
+            //     loader: dateloader,
+            //     panelHeight: 'auto',
+            //     width: '200'
+            // });
+        $('#statusCode').combobox('setValue', 2)
+        $('#type').combobox('setValue', '0');
+        $('#dept').combobox({
+            url: url_queryDept,
+            valueField: 'deptId',
+            textField: 'deptName',
+            method: 'post',
+            multiple: true,
+            loader: cloader,
+            panelHeight: 200,
+            onChange: function(n, o) {
+                var len = n.length;
+                // console.log(len);
+                var last = n[len - 1];
+                var depts = $('#dept').combobox('getData');
+                var dept_arr = [];
+                console.log(depts.length);
+                $.each(depts, function(i, val) {
+                        dept_arr.push(val.deptId)
+                    })
+                    // dept_arr = dept_arr.slice(1)
+                if (len < depts.length) {
+                    var val = $('#dept').combobox('getValues');
+                    if (val[0] == '') {
+                        $('#dept').combobox('setValues', val.slice(1));
+                    } else {
+                        /*第一个不等于all*/
+                        if (len == depts.length - 1) {
+                            console.log('else');
+                            val.push('')
+                            $('#dept').combobox('setValues', val);
+                        }
+                    }
+                }
+                if (last == '') {
+                    /*全选*/
+                    console.log('last=');
+                    if (len < depts.length) {
+                        $('#dept').combobox('setValues', dept_arr);
+                        selectAll = true;
+                    }
+                }
+            },
+        })
+        if (deptId) {
+            $('#dept').combobox('setValue', deptId);
+            $('#dept').combobox('disable');
+        }
+
+    });
+    </script>
+</head>
+
+<body>
+    <!-- <h2>审核信息查看</h2> -->
+    <!-- <p></p> -->
+    <div id="toolbar">
+        <div id="ts" style="padding:3px">
+            <span>审核状态:</span>
+            <select id="statusCode" value="2" class="easyui-combobox" name="statusCode" style="width:100px;" panelHeight="auto">
+                <option value="">全部</option>
+                <option value="0">已保存未提交</option>
+                <option value="1">已提交待审核</option>
+                <option value="2">审核通过</option>
+                <option value="3">审核未通过</option>
+                <option value="4">驳回状态</option>
+            </select>
+            <span>补助类型:</span>
+            <select id="type" value="2" class="easyui-combobox" name="type" panelHeight="auto" style="width:100px;">
+                <option value="">全部</option>
+                <option value="0">正常发放</option>
+                <option value="1">历史补助</option>
+            </select>
+            <span>考核年月:</span>
+            <input id="helpDate" type="text" class="easyui-datebox" data-options="formatter:myFormatter,parser:myParser">
+            <span>部门:</span>
+            <input id='dept' name='deptName' value="">
+            <!-- <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch(this)">查询</a> -->
+            <!-- <a href="#" class="easyui-linkbutton" plain="true" >Search</a> -->
+        </div>
+        <div id="ts2" style="padding:3px">
+            <span>岗位类型:</span>
+            <select id="officeType" value="1" class="easyui-combobox" name="officeType" style="width:100px;" panelHeight="auto">
+                <option value="">全部</option>
+                <option value="0">行政事务</option>
+                <option value="1">学生事务</option>
+                <option value="2">研究性工作</option>
+            </select>
+            <span>岗位科室:</span>
+            <input id='officeName' name='officeName' value="">
+            <span>学生姓名:</span>
+            <input id='studentName' name='studentName' value="">
+            <span>学号:</span>
+            <input id='studentId' name='studentId' value="">
+            <a href="#" class="easyui-linkbutton" plain="true" iconCls="icon-search" onclick="doSearch()">查询</a>
+        </div>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editBuzhu()">编辑</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="withdraw()">撤回已提交记录</a>
+        <a id="url" href="" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="getExcelUrl()"> 下载报表</a>
+    </div>
+    <table id="tt"></table>
+    <!-- 编辑补助对话框 -->
+    <div id="dlg" class="easyui-dialog" style="width:500px" closed="true" buttons="#dlg-buttons" data-options="draggable:false,modal:true">
+        <form id="fm" method="post" novalidate style="margin:0;padding:20px 50px">
+            <div style="margin-bottom:20px;font-size:14px;border-bottom:1px solid #ccc">审核信息</div>
+            <div style="margin-bottom:10px">
+                <input id="edit_stuId" name="stuId" class="easyui-textbox" required="true" label="学号:" disabled="true" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="edit_name" name="studentName" class="easyui-textbox" required="true" label="姓名" disabled="true" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="edit_deptId" name="deptId" class="easyui-textbox" label="部门编号:" disabled="true" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="edit_bankName" name="bankName" class="easyui-textbox" label="银行" disabled="true" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="edit_bankNo" name="bankNo" class="easyui-textbox" label="银行卡号" disabled="true" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="edit_type" name="type" class="easyui-textbox" label="类型" disabled="true" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="edit_date" name="helpDate" class="easyui-textbox" label="考核年月" style="width:100%">
+            </div>
+            <div style="margin-bottom:10px">
+                <input id="edit_money" name="money" class="easyui-numberbox" label="申请金额" style="width:100%">
+            </div>
+        </form>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveBuzhu()" style="width:90px">保存</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">取消</a>
+    </div>
+</body>
+
+</html>
