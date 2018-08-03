@@ -93,8 +93,6 @@ Font-awesome | 字体图标  | [http://fontawesome.io/](http://fontawesome.io/)
 zTree | 树插件  | [http://www.treejs.cn/v3/](http://www.treejs.cn/v3/)
 jQuery EasyUI | 基于jQuery的UI插件集合体  | [http://www.jeasyui.com](http://www.jeasyui.com)
 
-## 环境搭建（QQ群内有“zheng环境搭建和系统部署文档.doc”）
-
 #### 开发工具:
 - MySql: 数据库
 - Tomcat: 应用服务器
