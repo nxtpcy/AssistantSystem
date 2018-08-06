@@ -131,8 +131,6 @@ jQuery EasyUI | 基于jQuery的UI插件集合体  | [http://www.jeasyui.com](htt
 
 - [阿里中间件团队博客](http://jm.taobao.org/categories/%E5%88%86%E5%B8%83%E5%BC%8F/)
 
-- [单点登录原理与简单实现](http://shuzheng5201314.iteye.com/blog/2343910 "单点登录原理与简单实现")
-
 - [美团点评团队技术博客](https://tech.meituan.com/archives)
 
 - [深入理解java并发](https://blog.csdn.net/column/details/19116.html?&page=1)
